@@ -24,6 +24,7 @@
         <a href="staff.html">Staff Log</a>
         <a href="roles.html">Roles</a>
         <a href="hcpc-team.html">HCPC Team</a>
+        <a href="announcements.html">Announcements</a>
       </nav>
     </div>
   </header>
@@ -86,6 +87,18 @@
         <p>Manage HCPC team members and their permissions.</p>
       </a>
     </div>
+
+    <section class="panel hospital-news-panel">
+      <div class="section-title split-title">
+        <div>
+          <h2>Hospital News</h2>
+          <p>Latest UHH announcements, service updates and staff notices.</p>
+        </div>
+        <a class="button-link" href="announcements.html">Create announcement</a>
+      </div>
+      <div id="hospitalNewsList" class="news-list"></div>
+    </section>
+
   </main>
 
   <footer>
@@ -98,6 +111,7 @@
   <script>
     loadAllData();
     updateStats();
+    renderHospitalNews(3);
   </script>
 </body>
 </html>

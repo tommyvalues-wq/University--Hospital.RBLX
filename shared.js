@@ -3,6 +3,7 @@ const CASES_KEY = "uhh_hcpc_cases_v1";
 const TEAM_KEY = "uhh_hcpc_team_v1";
 const GROUP_ROLES_KEY = "uhh_group_roles_v1";
 const SPECIALITY_ROLES_KEY = "uhh_speciality_roles_v1";
+const ANNOUNCEMENTS_KEY = "uhh_announcements_v1";
 
 const DEFAULT_GROUP_ROLES = [
   "Awaiting Training", "Medical Student", "Trainee Healthcare Assistant",
@@ -26,6 +27,7 @@ let cases = [];
 let hcpcTeam = [];
 let groupRoles = [];
 let specialityRoles = [];
+let announcements = [];
 
 function loadJson(key, fallback) {
   try {
@@ -57,6 +59,7 @@ function loadAllData() {
   hcpcTeam = loadJson(TEAM_KEY, []);
   groupRoles = loadJson(GROUP_ROLES_KEY, DEFAULT_GROUP_ROLES);
   specialityRoles = loadJson(SPECIALITY_ROLES_KEY, DEFAULT_SPECIALITIES);
+  announcements = loadJson(ANNOUNCEMENTS_KEY, []);
 }
 
 function saveStaff() { saveJson(STORAGE_KEY, staff); }
@@ -64,6 +67,7 @@ function saveCases() { saveJson(CASES_KEY, cases); }
 function saveTeam() { saveJson(TEAM_KEY, hcpcTeam); }
 function saveGroupRoles() { saveJson(GROUP_ROLES_KEY, groupRoles); }
 function saveSpecialityRoles() { saveJson(SPECIALITY_ROLES_KEY, specialityRoles); }
+function saveAnnouncements() { saveJson(ANNOUNCEMENTS_KEY, announcements); }
 
 function generateRegistrationNumber() {
   const year = new Date().getFullYear();
@@ -159,3 +163,85 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a.getAttribute("href") === currentFile) a.classList.add("nav-active");
   });
 });
+
+
+function makeLinkHtml(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  const href = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+  return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(clean)}</a>`;
+}
+
+function renderHospitalNews(limit = 3) {
+  const list = document.getElementById("hospitalNewsList");
+  if (!list) return;
+
+  const items = announcements
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, limit);
+
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="empty-news">
+        <strong>No announcements yet.</strong>
+        <p>Staff can create hospital updates from the Announcements page.</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(a => `
+    <article class="news-card">
+      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
+      <div class="news-card-body">
+        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
+        <h3>${escapeHtml(a.title)}</h3>
+        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
+        <div class="news-footer">
+          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
+          ${a.link ? makeLinkHtml(a.link) : ""}
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderAnnouncementManager() {
+  const list = document.getElementById("announcementManagerList");
+  if (!list) return;
+
+  const items = announcements
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (items.length === 0) {
+    list.innerHTML = `<div class="empty-news"><strong>No announcements created yet.</strong></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(a => `
+    <article class="news-card manager-card">
+      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
+      <div class="news-card-body">
+        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
+        <h3>${escapeHtml(a.title)}</h3>
+        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
+        <div class="news-footer">
+          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
+          ${a.link ? makeLinkHtml(a.link) : ""}
+        </div>
+        <div class="row-actions" style="margin-top:12px;">
+          <button class="small revoke" onclick="deleteAnnouncement('${a.id}')">Delete</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function deleteAnnouncement(id) {
+  if (!confirm("Delete this announcement?")) return;
+  announcements = announcements.filter(a => a.id !== id);
+  saveAnnouncements();
+  renderAnnouncementManager();
+  renderHospitalNews();
+}
