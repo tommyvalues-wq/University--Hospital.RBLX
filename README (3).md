@@ -1,0 +1,1 @@
+{"scripts":{"start":"node server.js"},"dependencies":{"discord.js":"^14.15.3","dotenv":"^16.4.5","express":"^4.18.3","node-fetch":"^3.3.2"},"devDependencies":{}}

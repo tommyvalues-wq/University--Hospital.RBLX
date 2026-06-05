@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCPC Team — UHH Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="login.html">Staff Login</a>
+        <a href="staff-portal.html">Staff Portal</a>
+        <a href="hcpc-admin.html">HCPC Admin</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="container">
+      <h1>UHH HCPC Team</h1>
+      <p>Add staff who can manage registrations, tribunal cases, and register access.</p>
+    </div>
+  </div>
+
+  <main class="container" style="padding:34px 0;display:grid;gap:24px;">
+    <section class="panel">
+      <div class="section-title">
+        <h2>Add HCPC team member</h2>
+      </div>
+
+      <form id="hcpcTeamForm" class="form-grid">
+        <label>
+          Roblox username
+          <input required id="teamUsername" placeholder="e.g. UHHManager" />
+        </label>
+
+        <label>
+          Team role
+          <select required id="teamRole">
+            <option value="">Select role</option>
+            <option>HCPC Registrar</option>
+            <option>Tribunal Officer</option>
+            <option>Registration Manager</option>
+            <option>Compliance Officer</option>
+            <option>Senior HCPC Officer</option>
+            <option>Head of HCPC</option>
+          </select>
+        </label>
+
+        <label>
+          Permission level
+          <select required id="teamPermission">
+            <option>Can add registrations</option>
+            <option>Can add cases</option>
+            <option>Can manage registrations and cases</option>
+            <option>Full HCPC administration</option>
+          </select>
+        </label>
+
+        <label>
+          Added by
+          <input required id="teamAddedBy" placeholder="Your Roblox username" />
+        </label>
+
+        <button class="primary" type="submit">Add HCPC team member</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Team members</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Roblox Username</th>
+              <th>HCPC Team Role</th>
+              <th>Permissions</th>
+              <th>Added</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hcpcTeamTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
+
+    function renderTeam() {
+      const table = document.getElementById("hcpcTeamTable");
+      table.innerHTML = "";
+
+      if (hcpcTeam.length === 0) {
+        table.innerHTML = `<tr><td colspan="6">No HCPC team members added yet.</td></tr>`;
+        return;
+      }
+
+      hcpcTeam.slice().sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt)).forEach(t => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="badge ${t.status === "Active" ? "active-badge" : "revoked-badge"}">${escapeHtml(t.status)}</span></td>
+          <td>${escapeHtml(t.username)}</td>
+          <td>${escapeHtml(t.teamRole)}</td>
+          <td>${escapeHtml(t.permission)}</td>
+          <td>${formatDate(t.addedAt)}<br><small>By ${escapeHtml(t.addedBy)}</small></td>
+          <td>
+            <div class="row-actions">
+              ${t.status === "Active"
+                ? `<button class="small revoke" onclick="disableTeamMember('${t.id}')">Disable</button>`
+                : `<button class="small restore" onclick="enableTeamMember('${t.id}')">Enable</button>`
+              }
+              <button class="small" onclick="removeTeamMember('${t.id}')">Delete</button>
+            </div>
+          </td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    document.getElementById("hcpcTeamForm").addEventListener("submit", e => {
+      e.preventDefault();
+
+      const username = document.getElementById("teamUsername").value.trim();
+      const duplicate = hcpcTeam.find(t => t.username.toLowerCase() === username.toLowerCase() && t.status === "Active");
+
+      if (duplicate) {
+        alert("This username is already an active HCPC team member.");
+        return;
+      }
+
+      hcpcTeam.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        username,
+        teamRole: document.getElementById("teamRole").value,
+        permission: document.getElementById("teamPermission").value,
+        addedBy: document.getElementById("teamAddedBy").value.trim(),
+        status: "Active",
+        addedAt: new Date().toISOString()
+      });
+
+      saveTeam();
+      document.getElementById("hcpcTeamForm").reset();
+      renderTeam();
+    });
+
+    window.disableTeamMember = function(id) {
+      const t = hcpcTeam.find(x => x.id === id);
+      if (!t) return;
+      t.status = "Disabled";
+      saveTeam();
+      renderTeam();
+    };
+
+    window.enableTeamMember = function(id) {
+      const t = hcpcTeam.find(x => x.id === id);
+      if (!t) return;
+      t.status = "Active";
+      saveTeam();
+      renderTeam();
+    };
+
+    window.removeTeamMember = function(id) {
+      if (!confirm("Delete this HCPC team member?")) return;
+      hcpcTeam = hcpcTeam.filter(t => t.id !== id);
+      saveTeam();
+      renderTeam();
+    };
+
+    renderTeam();
+  </script>
+</body>
+</html>

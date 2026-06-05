@@ -1,0 +1,400 @@
+const STORAGE_KEY = "uhh_staff_registry_v1";
+const CASES_KEY = "uhh_hcpc_cases_v1";
+const TEAM_KEY = "uhh_hcpc_team_v1";
+const GROUP_ROLES_KEY = "uhh_group_roles_v1";
+const SPECIALITY_ROLES_KEY = "uhh_speciality_roles_v1";
+const ANNOUNCEMENTS_KEY = "uhh_announcements_v1";
+
+const DISCORD_WEBHOOK_KEY = "uhh_discord_webhook_url_v1";
+
+function getDiscordWebhookUrl() {
+  return localStorage.getItem(DISCORD_WEBHOOK_KEY) || "";
+}
+
+function setDiscordWebhookUrl(url) {
+  localStorage.setItem(DISCORD_WEBHOOK_KEY, String(url || "").trim());
+}
+
+function buildDiscordAnnouncementPayload(announcement) {
+  const url = window.location.href.replace(/announcements\.html.*$/, "index.html");
+  const description = String(announcement.text || "").slice(0, 3900);
+  const embed = {
+    title: announcement.title || "Hospital News",
+    description,
+    url: announcement.link || url,
+    color: 14548992,
+    fields: [
+      { name: "Category", value: announcement.category || "Hospital News", inline: true },
+      { name: "Posted by", value: announcement.author || "UHH Staff", inline: true }
+    ],
+    timestamp: announcement.createdAt || new Date().toISOString(),
+    footer: { text: "UHH Hospital News" }
+  };
+  if (announcement.image) embed.image = { url: announcement.image };
+  return {
+    username: "UHH Hospital News",
+    content: "📢 New hospital news has been posted.",
+    embeds: [embed]
+  };
+}
+
+async function sendAnnouncementToDiscord(announcement, webhookUrl) {
+  const url = String(webhookUrl || "").trim();
+  if (!url) return { ok: false, message: "No Discord webhook URL set." };
+  if (!/^https:\/\/discord(?:app)?\.com\/api\/webhooks\//i.test(url)) {
+    return { ok: false, message: "That does not look like a Discord webhook URL." };
+  }
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(buildDiscordAnnouncementPayload(announcement))
+  });
+  if (!response.ok) {
+    return { ok: false, message: `Discord returned ${response.status}.` };
+  }
+  return { ok: true, message: "Sent to Discord." };
+}
+
+
+const DEFAULT_GROUP_ROLES = [
+  "Awaiting Training", "Medical Student", "Trainee Healthcare Assistant",
+  "Healthcare Assistant", "Student Nurse", "Staff Nurse", "Senior Staff Nurse",
+  "Junior Doctor", "Registrar", "Consultant", "Senior Consultant", "Matron",
+  "Clinical Lead", "Clinical Director", "Medical Director", "Director of Nursing",
+  "Director of Operations", "Director of Hospital Affairs", "Deputy Chief Executive",
+  "Chief Executive Officer"
+];
+
+const DEFAULT_SPECIALITIES = [
+  "Emergency Medicine", "Trauma Surgery", "General Surgery", "Cardiology",
+  "Neurology", "Respiratory Medicine", "Paediatrics", "Obstetrics & Gynaecology",
+  "Maternity", "Radiology", "Anaesthetics", "Intensive Care", "Mental Health",
+  "Paramedic Practice", "Pharmacy", "Physiotherapy", "Safeguarding",
+  "Clinical Education", "Infection Prevention", "Patient Safety", "Governance & Compliance"
+];
+
+let staff = [];
+let cases = [];
+let hcpcTeam = [];
+let groupRoles = [];
+let specialityRoles = [];
+let announcements = [];
+
+function loadJson(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : fallback;
+  } catch { return fallback; }
+}
+
+function saveJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function migrateStaffRecord(r) {
+  if (!r.roles) {
+    r.roles = r.role ? [r.role] : [];
+    delete r.role;
+  }
+  if (!r.specialityRoles) {
+    const old = r.specialityRole;
+    r.specialityRoles = old && old !== "None" ? [old] : [];
+    delete r.specialityRole;
+  }
+  return r;
+}
+
+function loadAllData() {
+  staff = loadJson(STORAGE_KEY, []).map(migrateStaffRecord);
+  cases = loadJson(CASES_KEY, []);
+  hcpcTeam = loadJson(TEAM_KEY, []);
+  groupRoles = loadJson(GROUP_ROLES_KEY, DEFAULT_GROUP_ROLES);
+  specialityRoles = loadJson(SPECIALITY_ROLES_KEY, DEFAULT_SPECIALITIES);
+  announcements = loadJson(ANNOUNCEMENTS_KEY, []);
+}
+
+function saveStaff() { saveJson(STORAGE_KEY, staff); }
+function saveCases() { saveJson(CASES_KEY, cases); }
+function saveTeam() { saveJson(TEAM_KEY, hcpcTeam); }
+function saveGroupRoles() { saveJson(GROUP_ROLES_KEY, groupRoles); }
+function saveSpecialityRoles() { saveJson(SPECIALITY_ROLES_KEY, specialityRoles); }
+function saveAnnouncements() { saveJson(ANNOUNCEMENTS_KEY, announcements); }
+
+function generateRegistrationNumber() {
+  const year = new Date().getFullYear();
+  const random = Math.floor(100000 + Math.random() * 900000);
+  const checksum = Math.floor(10 + Math.random() * 89);
+  return `UHH-HCPC-RBX-${year}-${random}-${checksum}`;
+}
+
+function generateCaseNumber() {
+  const year = new Date().getFullYear();
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `UHH-TRB-${year}-${random}`;
+}
+
+function formatDate(iso) {
+  if (!iso) return "Not recorded";
+  return new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[c]));
+}
+
+function updateStats() {
+  const el = id => document.getElementById(id);
+  if (el("totalStaff")) el("totalStaff").textContent = staff.length;
+  if (el("activeStaff")) el("activeStaff").textContent = staff.filter(s => s.status === "Active").length;
+  if (el("revokedStaff")) el("revokedStaff").textContent = staff.filter(s => s.status === "Revoked").length;
+  if (el("totalCases")) el("totalCases").textContent = cases.length;
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function createTagPicker(selectEl, containerEl, initialOptions, initialValues) {
+  let options = [...(initialOptions || [])];
+  let selected = [...(initialValues || [])];
+
+  containerEl.addEventListener("click", e => {
+    const btn = e.target.closest("[data-remove]");
+    if (btn) {
+      selected.splice(parseInt(btn.dataset.remove), 1);
+      render();
+    }
+  });
+
+  selectEl.addEventListener("change", () => {
+    const val = selectEl.value;
+    if (val && !selected.includes(val)) {
+      selected.push(val);
+      selectEl.value = "";
+      render();
+    }
+  });
+
+  function render() {
+    containerEl.innerHTML = selected.length === 0
+      ? `<span class="picker-placeholder">None selected — use the dropdown above to add</span>`
+      : selected.map((v, i) =>
+          `<span class="chip">${escapeHtml(v)} <button type="button" data-remove="${i}">&#215;</button></span>`
+        ).join("");
+
+    selectEl.innerHTML = `<option value="">Add...</option>`;
+    options.filter(o => !selected.includes(o)).forEach(o => {
+      const opt = document.createElement("option");
+      opt.value = o;
+      opt.textContent = o;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  render();
+
+  return {
+    getValues() { return [...selected]; },
+    setOptions(opts) { options = [...opts]; render(); },
+    reset() { selected = []; render(); }
+  };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const currentFile = window.location.pathname.split("/").pop() || "index.html";
+  document.querySelectorAll("nav a").forEach(a => {
+    if (a.getAttribute("href") === currentFile) a.classList.add("nav-active");
+  });
+});
+
+
+function makeLinkHtml(url) {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  const href = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+  return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(clean)}</a>`;
+}
+
+function renderHospitalNews(limit = 3) {
+  const list = document.getElementById("hospitalNewsList");
+  if (!list) return;
+
+  const items = announcements
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, limit);
+
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="empty-news">
+        <strong>No announcements yet.</strong>
+        <p>Staff can create hospital updates from the Announcements page.</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(a => `
+    <article class="news-card">
+      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
+      <div class="news-card-body">
+        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
+        <h3>${escapeHtml(a.title)}</h3>
+        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
+        <div class="news-footer">
+          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
+          ${a.link ? makeLinkHtml(a.link) : ""}
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderAnnouncementManager() {
+  const list = document.getElementById("announcementManagerList");
+  if (!list) return;
+
+  const items = announcements
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (items.length === 0) {
+    list.innerHTML = `<div class="empty-news"><strong>No announcements created yet.</strong></div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(a => `
+    <article class="news-card manager-card">
+      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
+      <div class="news-card-body">
+        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
+        <h3>${escapeHtml(a.title)}</h3>
+        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
+        <div class="news-footer">
+          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
+          ${a.link ? makeLinkHtml(a.link) : ""}
+        </div>
+        <div class="row-actions" style="margin-top:12px;">
+          <button class="small revoke" onclick="deleteAnnouncement('${a.id}')">Delete</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function deleteAnnouncement(id) {
+  if (!confirm("Delete this announcement?")) return;
+  announcements = announcements.filter(a => a.id !== id);
+  saveAnnouncements();
+  renderAnnouncementManager();
+  renderHospitalNews();
+}
+
+
+// Staff portal, requests, documents, vacancies and editable information pages
+const STAFF_SESSION_KEY = "uhh_staff_session_v1";
+const STAFF_REQUESTS_KEY = "uhh_staff_requests_v1";
+const STAFF_DOCUMENTS_KEY = "uhh_staff_documents_v1";
+const VACANCIES_KEY = "uhh_vacancies_v1";
+const INFO_PAGES_KEY = "uhh_info_pages_v1";
+const DISCORD_INCOMING_UPDATES_KEY = "uhh_discord_incoming_updates_v1";
+
+let staffRequests = [];
+let staffDocuments = [];
+let vacancies = [];
+let infoPages = [];
+let discordIncomingUpdates = [];
+
+function loadPortalData() {
+  loadAllData();
+  staffRequests = loadJson(STAFF_REQUESTS_KEY, []);
+  staffDocuments = loadJson(STAFF_DOCUMENTS_KEY, []);
+  vacancies = loadJson(VACANCIES_KEY, []);
+  infoPages = loadJson(INFO_PAGES_KEY, []);
+  discordIncomingUpdates = loadJson(DISCORD_INCOMING_UPDATES_KEY, []);
+}
+function saveStaffRequests(){ saveJson(STAFF_REQUESTS_KEY, staffRequests); }
+function saveStaffDocuments(){ saveJson(STAFF_DOCUMENTS_KEY, staffDocuments); }
+function saveVacancies(){ saveJson(VACANCIES_KEY, vacancies); }
+function saveInfoPages(){ saveJson(INFO_PAGES_KEY, infoPages); }
+function saveDiscordIncomingUpdates(){ saveJson(DISCORD_INCOMING_UPDATES_KEY, discordIncomingUpdates); }
+function normalizePin(v){ return String(v || "").trim().replace(/\s+/g, "").toUpperCase(); }
+function isActiveStaffRecord(r){ return r && r.status === "Active"; }
+function findStaffForLogin(username, pin){
+  const u=String(username||"").trim().toLowerCase(); const p=normalizePin(pin);
+  return staff.find(r => isActiveStaffRecord(r) && String(r.username||"").toLowerCase()===u && normalizePin(r.hcpcPin || r.registrationNumber)===p);
+}
+function loginStaff(record){ localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify({staffId:record.id, username:record.username, loggedInAt:new Date().toISOString()})); }
+function logoutStaff(){ localStorage.removeItem(STAFF_SESSION_KEY); location.href='login.html'; }
+function getCurrentStaff(){
+  try { const sess=JSON.parse(localStorage.getItem(STAFF_SESSION_KEY)||'{}'); return staff.find(s=>s.id===sess.staffId && isActiveStaffRecord(s)); }
+  catch { return null; }
+}
+function requireStaffLogin(){
+  const current=getCurrentStaff();
+  if(!current){ location.href='login.html?next='+encodeURIComponent(location.pathname.split('/').pop()||'staff-portal.html'); return null; }
+  return current;
+}
+function isHCPC(record){
+  const roles=[...(record?.roles||[]), record?.rank, record?.department, ...(record?.specialityRoles||[])].join(' ').toLowerCase();
+  return roles.includes('hcpc') || roles.includes('governance') || roles.includes('director') || roles.includes('executive') || roles.includes('chief') || roles.includes('admin');
+}
+function requireHCPC(){ const cur=requireStaffLogin(); if(cur && !isHCPC(cur)){ alert('HCPC/Admin access only.'); location.href='staff-portal.html'; return null; } return cur; }
+function staffDisplay(record){ return `${record.displayName || record.username} (${record.username})`; }
+function buildPortalNotice(){
+  return `<div class="notice"><strong>Prototype note:</strong> GitHub Pages cannot securely verify Roblox login, protect files, or read Discord channels by itself. This version checks your local staff registry and HCPC PIN in the browser. Use the included backend folder for real OAuth, database storage and Discord syncing.</div>`;
+}
+function addActivity(record, message){
+  record.activity = Array.isArray(record.activity) ? record.activity : [];
+  record.activity.unshift({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), message, at: new Date().toISOString() });
+}
+function approveRequest(id){
+  const req=staffRequests.find(r=>r.id===id); if(!req) return;
+  req.status='Approved'; req.reviewedAt=new Date().toISOString(); req.reviewedBy=(getCurrentStaff()||{}).username || 'HCPC';
+  const person=staff.find(s=>s.id===req.staffId);
+  if(person){
+    if(req.type==='Leave of Absence'){ person.loaStatus='On Leave of Absence'; person.loaReason=req.details; addActivity(person, 'LOA approved: '+req.details); }
+    if(req.type==='Discharge Request'){ person.status='Discharged'; person.revokedAt=new Date().toISOString(); addActivity(person, 'Discharge request approved.'); }
+    if(req.type==='Speciality Change'){ person.specialityRoles=[req.requestedValue].filter(Boolean); addActivity(person, 'Speciality changed to '+req.requestedValue); }
+    saveStaff();
+  }
+  saveStaffRequests(); renderRequestQueues(); alert('Request approved and staff profile updated.');
+}
+function denyRequest(id){ const req=staffRequests.find(r=>r.id===id); if(!req) return; req.status='Denied'; req.reviewedAt=new Date().toISOString(); req.reviewedBy=(getCurrentStaff()||{}).username || 'HCPC'; saveStaffRequests(); renderRequestQueues(); }
+function renderRequestQueues(){
+  const pending=document.getElementById('pendingRequests'); const mine=document.getElementById('myRequests');
+  const current=getCurrentStaff();
+  const card=req=>`<article class="mini-record"><strong>${escapeHtml(req.type)}</strong><p>${escapeHtml(req.details||'No details')}</p>${req.requestedValue?`<p><b>Requested:</b> ${escapeHtml(req.requestedValue)}</p>`:''}<p><b>Status:</b> ${escapeHtml(req.status)} · ${formatDate(req.createdAt)}</p>${pending?`<div class="row-actions"><button class="small" onclick="approveRequest('${req.id}')">Approve</button><button class="small revoke" onclick="denyRequest('${req.id}')">Deny</button></div>`:''}</article>`;
+  if(mine && current){ const items=staffRequests.filter(r=>r.staffId===current.id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); mine.innerHTML=items.length?items.map(card).join(''):'<p class="muted">No requests submitted yet.</p>'; }
+  if(pending){ const items=staffRequests.filter(r=>r.status==='Pending').sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); pending.innerHTML=items.length?items.map(card).join(''):'<p class="muted">No pending requests.</p>'; }
+}
+function renderDocuments(){
+  const box=document.getElementById('documentsList'); if(!box) return;
+  const items=staffDocuments.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  box.innerHTML=items.length?items.map(d=>`<article class="mini-record"><strong>${escapeHtml(d.title)}</strong><p>${escapeHtml(d.description||'')}</p><p><b>Category:</b> ${escapeHtml(d.category||'Document')} · ${formatDate(d.createdAt)}</p>${d.url?makeLinkHtml(d.url):''}<div class="row-actions hcpc-only"><button class="small revoke" onclick="deleteDocument('${d.id}')">Delete</button></div></article>`).join(''):'<p class="muted">No documents uploaded yet.</p>';
+}
+function deleteDocument(id){ if(!confirm('Delete this document?')) return; staffDocuments=staffDocuments.filter(d=>d.id!==id); saveStaffDocuments(); renderDocuments(); }
+function renderVacancies(){
+  const box=document.getElementById('vacanciesList'); if(!box) return;
+  const items=[...vacancies, ...discordIncomingUpdates.map(u=>({title:u.title||'Discord vacancy update', department:'Discord', description:u.content||'', createdAt:u.createdAt, url:u.url}))].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  box.innerHTML=items.length?items.map(v=>`<article class="mini-record"><strong>${escapeHtml(v.title)}</strong><p>${escapeHtml(v.description||'')}</p><p><b>Area:</b> ${escapeHtml(v.department||'General')} · ${formatDate(v.createdAt)}</p>${v.url?makeLinkHtml(v.url):''}<div class="row-actions hcpc-only"><button class="small revoke" onclick="deleteVacancy('${v.id}')">Delete</button></div></article>`).join(''):'<p class="muted">No vacancies posted yet.</p>';
+}
+function deleteVacancy(id){ vacancies=vacancies.filter(v=>v.id!==id); saveVacancies(); renderVacancies(); }
+function renderInfoPages(){
+  const box=document.getElementById('infoPagesList'); if(!box) return;
+  const items=infoPages.slice().sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
+  box.innerHTML=items.length?items.map(i=>`<article class="mini-record"><strong>${escapeHtml(i.title)}</strong><p>${escapeHtml(i.body||'').replace(/\n/g,'<br>')}</p><p>${formatDate(i.updatedAt||i.createdAt)}</p><div class="row-actions hcpc-only"><button class="small revoke" onclick="deleteInfoPage('${i.id}')">Delete</button></div></article>`).join(''):'<p class="muted">No information pages yet.</p>';
+}
+function deleteInfoPage(id){ infoPages=infoPages.filter(i=>i.id!==id); saveInfoPages(); renderInfoPages(); }
+function renderHCPCStaffEditor(){
+  const box=document.getElementById('hcpcStaffEditor'); if(!box) return;
+  box.innerHTML=staff.map(s=>`<article class="mini-record"><strong>${escapeHtml(staffDisplay(s))}</strong><p>${escapeHtml(s.registrationNumber)} · ${escapeHtml(s.status)}</p><div class="form-grid compact"><label>Rank<input id="rank-${s.id}" value="${escapeHtml(s.rank||'')}"></label><label>Department<input id="dept-${s.id}" value="${escapeHtml(s.department||'')}"></label><label>Specialities<input id="spec-${s.id}" value="${escapeHtml((s.specialityRoles||[]).join(', '))}"></label><label>Roles<input id="roles-${s.id}" value="${escapeHtml((s.roles||[]).join(', '))}"></label></div><button class="small" onclick="saveStaffEdit('${s.id}')">Save changes</button></article>`).join('');
+}
+function saveStaffEdit(id){ const s=staff.find(x=>x.id===id); if(!s) return; s.rank=document.getElementById('rank-'+id).value.trim(); s.department=document.getElementById('dept-'+id).value.trim(); s.specialityRoles=document.getElementById('spec-'+id).value.split(',').map(x=>x.trim()).filter(Boolean); s.roles=document.getElementById('roles-'+id).value.split(',').map(x=>x.trim()).filter(Boolean); addActivity(s,'HCPC edited rank/department/roles.'); saveStaff(); alert('Staff profile updated.'); renderHCPCStaffEditor(); }

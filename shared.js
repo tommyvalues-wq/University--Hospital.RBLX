@@ -1,247 +1,192 @@
-const STORAGE_KEY = "uhh_staff_registry_v1";
-const CASES_KEY = "uhh_hcpc_cases_v1";
-const TEAM_KEY = "uhh_hcpc_team_v1";
-const GROUP_ROLES_KEY = "uhh_group_roles_v1";
-const SPECIALITY_ROLES_KEY = "uhh_speciality_roles_v1";
-const ANNOUNCEMENTS_KEY = "uhh_announcements_v1";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Staff — UHH Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="login.html">Staff Login</a>
+        <a href="staff-portal.html">Staff Portal</a>
+        <a href="hcpc-admin.html">HCPC Admin</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
 
-const DEFAULT_GROUP_ROLES = [
-  "Awaiting Training", "Medical Student", "Trainee Healthcare Assistant",
-  "Healthcare Assistant", "Student Nurse", "Staff Nurse", "Senior Staff Nurse",
-  "Junior Doctor", "Registrar", "Consultant", "Senior Consultant", "Matron",
-  "Clinical Lead", "Clinical Director", "Medical Director", "Director of Nursing",
-  "Director of Operations", "Director of Hospital Affairs", "Deputy Chief Executive",
-  "Chief Executive Officer"
-];
+  <div class="page-hero">
+    <div class="container">
+      <h1>Register a staff member</h1>
+      <p>Create a UHH registration record with group ranks, specialities and department.</p>
+    </div>
+  </div>
 
-const DEFAULT_SPECIALITIES = [
-  "Emergency Medicine", "Trauma Surgery", "General Surgery", "Cardiology",
-  "Neurology", "Respiratory Medicine", "Paediatrics", "Obstetrics & Gynaecology",
-  "Maternity", "Radiology", "Anaesthetics", "Intensive Care", "Mental Health",
-  "Paramedic Practice", "Pharmacy", "Physiotherapy", "Safeguarding",
-  "Clinical Education", "Infection Prevention", "Patient Safety", "Governance & Compliance"
-];
+  <main class="container" style="padding:34px 0;">
+    <div id="successBanner" class="success-banner" style="display:none;"></div>
 
-let staff = [];
-let cases = [];
-let hcpcTeam = [];
-let groupRoles = [];
-let specialityRoles = [];
-let announcements = [];
+    <section class="panel">
+      <form id="registrationForm" class="form-grid">
+        <label>
+          Roblox username
+          <input required id="username" placeholder="e.g. TommyNHS" />
+        </label>
 
-function loadJson(key, fallback) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key));
-    return Array.isArray(value) ? value : fallback;
-  } catch { return fallback; }
-}
+        <label>
+          Display name
+          <input id="displayName" placeholder="Optional" />
+        </label>
 
-function saveJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
+        <label>
+          Department
+          <select required id="department">
+            <option value="">Select department</option>
+            <option>Accident &amp; Emergency</option>
+            <option>Cardiology</option>
+            <option>General Medicine</option>
+            <option>Surgery</option>
+            <option>Paediatrics</option>
+            <option>Radiology</option>
+            <option>Maternity</option>
+            <option>Mental Health</option>
+            <option>Administration</option>
+            <option>Security</option>
+            <option>Education &amp; Training</option>
+            <option>Clinical Governance</option>
+          </select>
+        </label>
 
-function migrateStaffRecord(r) {
-  if (!r.roles) {
-    r.roles = r.role ? [r.role] : [];
-    delete r.role;
-  }
-  if (!r.specialityRoles) {
-    const old = r.specialityRole;
-    r.specialityRoles = old && old !== "None" ? [old] : [];
-    delete r.specialityRole;
-  }
-  return r;
-}
+        <label>
+          Rank level
+          <select required id="rank">
+            <option value="">Select rank</option>
+            <option>Low Rank</option>
+            <option>Middle Rank</option>
+            <option>High Rank</option>
+            <option>Senior High Rank</option>
+            <option>Executive</option>
+          </select>
+        </label>
 
-function loadAllData() {
-  staff = loadJson(STORAGE_KEY, []).map(migrateStaffRecord);
-  cases = loadJson(CASES_KEY, []);
-  hcpcTeam = loadJson(TEAM_KEY, []);
-  groupRoles = loadJson(GROUP_ROLES_KEY, DEFAULT_GROUP_ROLES);
-  specialityRoles = loadJson(SPECIALITY_ROLES_KEY, DEFAULT_SPECIALITIES);
-  announcements = loadJson(ANNOUNCEMENTS_KEY, []);
-}
+        <div class="full">
+          <label style="margin-bottom:6px;">Group roles / ranks</label>
+          <select id="rolePickerSelect" style="width:100%;margin-bottom:8px;border:2px solid var(--border);padding:12px;font:inherit;background:white;"></select>
+          <div id="selectedRolesContainer" class="chip-box min-chip-box"></div>
+        </div>
 
-function saveStaff() { saveJson(STORAGE_KEY, staff); }
-function saveCases() { saveJson(CASES_KEY, cases); }
-function saveTeam() { saveJson(TEAM_KEY, hcpcTeam); }
-function saveGroupRoles() { saveJson(GROUP_ROLES_KEY, groupRoles); }
-function saveSpecialityRoles() { saveJson(SPECIALITY_ROLES_KEY, specialityRoles); }
-function saveAnnouncements() { saveJson(ANNOUNCEMENTS_KEY, announcements); }
+        <div class="full">
+          <label style="margin-bottom:6px;">Speciality roles</label>
+          <select id="specialityPickerSelect" style="width:100%;margin-bottom:8px;border:2px solid var(--border);padding:12px;font:inherit;background:white;"></select>
+          <div id="selectedSpecialitiesContainer" class="chip-box min-chip-box"></div>
+        </div>
 
-function generateRegistrationNumber() {
-  const year = new Date().getFullYear();
-  const random = Math.floor(100000 + Math.random() * 900000);
-  const checksum = Math.floor(10 + Math.random() * 89);
-  return `UHH-HCPC-RBX-${year}-${random}-${checksum}`;
-}
+        <label>
+          HCPC PIN for staff login
+          <input required id="hcpcPin" placeholder="Give this PIN to the staff member" />
+        </label>
 
-function generateCaseNumber() {
-  const year = new Date().getFullYear();
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `UHH-TRB-${year}-${random}`;
-}
+        <label>
+          Registered by
+          <input required id="registeredBy" placeholder="Your Roblox username" />
+        </label>
 
-function formatDate(iso) {
-  if (!iso) return "Not recorded";
-  return new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
-}
+        <label class="full">
+          Notes
+          <textarea id="notes" placeholder="Training, warnings, permissions, or role notes"></textarea>
+        </label>
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[c]));
-}
+        <button class="primary" type="submit">Generate registration</button>
+      </form>
+    </section>
+  </main>
 
-function updateStats() {
-  const el = id => document.getElementById(id);
-  if (el("totalStaff")) el("totalStaff").textContent = staff.length;
-  if (el("activeStaff")) el("activeStaff").textContent = staff.filter(s => s.status === "Active").length;
-  if (el("revokedStaff")) el("revokedStaff").textContent = staff.filter(s => s.status === "Revoked").length;
-  if (el("totalCases")) el("totalCases").textContent = cases.length;
-}
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
 
-function downloadFile(filename, content, type) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
 
-function createTagPicker(selectEl, containerEl, initialOptions, initialValues) {
-  let options = [...(initialOptions || [])];
-  let selected = [...(initialValues || [])];
+    const rolePicker = createTagPicker(
+      document.getElementById("rolePickerSelect"),
+      document.getElementById("selectedRolesContainer"),
+      groupRoles
+    );
 
-  containerEl.addEventListener("click", e => {
-    const btn = e.target.closest("[data-remove]");
-    if (btn) {
-      selected.splice(parseInt(btn.dataset.remove), 1);
-      render();
-    }
-  });
+    const specialityPicker = createTagPicker(
+      document.getElementById("specialityPickerSelect"),
+      document.getElementById("selectedSpecialitiesContainer"),
+      specialityRoles
+    );
 
-  selectEl.addEventListener("change", () => {
-    const val = selectEl.value;
-    if (val && !selected.includes(val)) {
-      selected.push(val);
-      selectEl.value = "";
-      render();
-    }
-  });
+    document.getElementById("registrationForm").addEventListener("submit", e => {
+      e.preventDefault();
 
-  function render() {
-    containerEl.innerHTML = selected.length === 0
-      ? `<span class="picker-placeholder">None selected — use the dropdown above to add</span>`
-      : selected.map((v, i) =>
-          `<span class="chip">${escapeHtml(v)} <button type="button" data-remove="${i}">&#215;</button></span>`
-        ).join("");
+      const username = document.getElementById("username").value.trim();
+      const duplicate = staff.find(s => s.username.toLowerCase() === username.toLowerCase() && s.status === "Active");
 
-    selectEl.innerHTML = `<option value="">Add...</option>`;
-    options.filter(o => !selected.includes(o)).forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o;
-      opt.textContent = o;
-      selectEl.appendChild(opt);
+      if (duplicate) {
+        alert("This Roblox username already has an active registration. Revoke it before creating another.");
+        return;
+      }
+
+      const selectedRoles = rolePicker.getValues();
+      if (selectedRoles.length === 0) {
+        alert("Select at least one group role.");
+        return;
+      }
+
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        username,
+        displayName: document.getElementById("displayName").value.trim(),
+        department: document.getElementById("department").value,
+        roles: selectedRoles,
+        specialityRoles: specialityPicker.getValues(),
+        rank: document.getElementById("rank").value,
+        hcpcPin: document.getElementById("hcpcPin").value.trim(),
+        registeredBy: document.getElementById("registeredBy").value.trim(),
+        notes: document.getElementById("notes").value.trim(),
+        registrationNumber: generateRegistrationNumber(),
+        status: "Active",
+        registeredAt: new Date().toISOString(),
+        revokedAt: null
+      };
+
+      staff.push(record);
+      saveStaff();
+
+      document.getElementById("registrationForm").reset();
+      rolePicker.reset();
+      specialityPicker.reset();
+
+      const banner = document.getElementById("successBanner");
+      banner.innerHTML = `<strong>Registration created:</strong> ${escapeHtml(record.registrationNumber)} for ${escapeHtml(username)}. <a href="staff.html">View staff log</a>`;
+      banner.style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
-  }
-
-  render();
-
-  return {
-    getValues() { return [...selected]; },
-    setOptions(opts) { options = [...opts]; render(); },
-    reset() { selected = []; render(); }
-  };
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const currentFile = window.location.pathname.split("/").pop() || "index.html";
-  document.querySelectorAll("nav a").forEach(a => {
-    if (a.getAttribute("href") === currentFile) a.classList.add("nav-active");
-  });
-});
-
-
-function makeLinkHtml(url) {
-  const clean = String(url || "").trim();
-  if (!clean) return "";
-  const href = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
-  return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(clean)}</a>`;
-}
-
-function renderHospitalNews(limit = 3) {
-  const list = document.getElementById("hospitalNewsList");
-  if (!list) return;
-
-  const items = announcements
-    .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, limit);
-
-  if (items.length === 0) {
-    list.innerHTML = `
-      <div class="empty-news">
-        <strong>No announcements yet.</strong>
-        <p>Staff can create hospital updates from the Announcements page.</p>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = items.map(a => `
-    <article class="news-card">
-      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
-      <div class="news-card-body">
-        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
-        <h3>${escapeHtml(a.title)}</h3>
-        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
-        <div class="news-footer">
-          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
-          ${a.link ? makeLinkHtml(a.link) : ""}
-        </div>
-      </div>
-    </article>
-  `).join("");
-}
-
-function renderAnnouncementManager() {
-  const list = document.getElementById("announcementManagerList");
-  if (!list) return;
-
-  const items = announcements
-    .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  if (items.length === 0) {
-    list.innerHTML = `<div class="empty-news"><strong>No announcements created yet.</strong></div>`;
-    return;
-  }
-
-  list.innerHTML = items.map(a => `
-    <article class="news-card manager-card">
-      ${a.image ? `<img src="${escapeHtml(a.image)}" alt="${escapeHtml(a.title)} announcement image" />` : ""}
-      <div class="news-card-body">
-        <div class="news-meta">${escapeHtml(a.category || "Hospital News")} · ${formatDate(a.createdAt)}</div>
-        <h3>${escapeHtml(a.title)}</h3>
-        <p>${escapeHtml(a.text).replace(/\n/g, "<br>")}</p>
-        <div class="news-footer">
-          <span>Posted by ${escapeHtml(a.author || "UHH Staff")}</span>
-          ${a.link ? makeLinkHtml(a.link) : ""}
-        </div>
-        <div class="row-actions" style="margin-top:12px;">
-          <button class="small revoke" onclick="deleteAnnouncement('${a.id}')">Delete</button>
-        </div>
-      </div>
-    </article>
-  `).join("");
-}
-
-function deleteAnnouncement(id) {
-  if (!confirm("Delete this announcement?")) return;
-  announcements = announcements.filter(a => a.id !== id);
-  saveAnnouncements();
-  renderAnnouncementManager();
-  renderHospitalNews();
-}
+  </script>
+</body>
+</html>

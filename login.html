@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UHH Staff Registration Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="login.html">Staff Login</a>
+        <a href="staff-portal.html">Staff Portal</a>
+        <a href="hcpc-admin.html">HCPC Admin</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="tag">UHH Roblox Healthcare Registry</p>
+        <h1>Staff registration, tribunal cases and role management</h1>
+        <p class="lead">
+          Register staff, assign Cardiff Ro-University style group roles, add multiple speciality roles,
+          generate a Roblox HCPC-style number, and manage cases, punishments and revocations.
+        </p>
+        <div class="notice">
+          Fictional UHH Roblox roleplay system. Not affiliated with the NHS, Cardiff University, Roblox, or the real HCPC.
+        </div>
+      </div>
+      <div class="status-card">
+        <h2>Registry Summary</h2>
+        <div class="stats">
+          <div><strong id="totalStaff">0</strong><span>Total staff</span></div>
+          <div><strong id="activeStaff">0</strong><span>Active</span></div>
+          <div><strong id="revokedStaff">0</strong><span>Revoked</span></div>
+          <div><strong id="totalCases">0</strong><span>Tribunal cases</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="panel hospital-news-panel">
+      <div class="section-title split-title">
+        <div>
+          <h2>Hospital News</h2>
+          <p>Latest UHH announcements, service updates and staff notices.</p>
+        </div>
+        <a class="button-link" href="announcements.html">Create announcement</a>
+      </div>
+      <div id="hospitalNewsList" class="news-list"></div>
+    </section>
+
+    <div class="page-cards">
+      <a href="register.html" class="page-card">
+        <div class="page-card-icon">REG</div>
+        <h3>Register Staff</h3>
+        <p>Create a new UHH registration record with multiple group roles, specialities and department.</p>
+      </a>
+      <a href="lookup.html" class="page-card">
+        <div class="page-card-icon">LOOK</div>
+        <h3>Public Lookup</h3>
+        <p>Search for a staff member by registration number or Roblox username.</p>
+      </a>
+      <a href="tribunal.html" class="page-card">
+        <div class="page-card-icon">TRB</div>
+        <h3>HCPC Tribunal</h3>
+        <p>View and manage tribunal cases, punishments and revocations.</p>
+      </a>
+      <a href="staff.html" class="page-card">
+        <div class="page-card-icon">LOG</div>
+        <h3>Staff Log</h3>
+        <p>View, manage and export all registered staff records.</p>
+      </a>
+      <a href="roles.html" class="page-card">
+        <div class="page-card-icon">RLS</div>
+        <h3>Roles &amp; Specialities</h3>
+        <p>Configure group roles and speciality roles for your UHH group.</p>
+      </a>
+      <a href="hcpc-team.html" class="page-card">
+        <div class="page-card-icon">HCPC</div>
+        <h3>HCPC Team</h3>
+        <p>Manage HCPC team members and their permissions.</p>
+      </a>
+      <a href="login.html" class="page-card">
+        <div class="page-card-icon">LOGIN</div>
+        <h3>Staff Portal Login</h3>
+        <p>Staff can verify with Roblox username and HCPC PIN to access documents, requests and updates.</p>
+      </a>
+      <a href="vacancies.html" class="page-card">
+        <div class="page-card-icon">VAC</div>
+        <h3>Current Vacancies</h3>
+        <p>View manually posted vacancies and Discord vacancy updates.</p>
+      </a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
+    updateStats();
+    renderHospitalNews(3);
+  </script>
+</body>
+</html>

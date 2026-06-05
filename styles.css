@@ -664,3 +664,24 @@ footer {
     height: 210px;
   }
 }
+
+
+/* Discord + announcement controls */
+.warning-panel {
+  border: 1px solid rgba(255, 193, 7, 0.35);
+}
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.checkbox-line input {
+  width: auto;
+}
+.hospital-news-panel {
+  margin-bottom: 24px;
+}
+
+
+.muted{color:var(--muted);}.mini-record{border:1px solid var(--border);border-radius:14px;padding:16px;margin:12px 0;background:#fff;box-shadow:var(--shadow-sm,0 4px 14px rgba(0,0,0,.06));}.mini-record p{margin:8px 0;}.form-grid.compact{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0;}.form-grid.compact input{padding:10px}.nav-active{font-weight:800;text-decoration:underline}.hcpc-only{margin-top:10px}.portal-actions{display:flex;gap:10px;flex-wrap:wrap}.button-link,.small{display:inline-block;border:0;border-radius:10px;background:var(--primary,#b80000);color:white;padding:10px 14px;text-decoration:none;cursor:pointer}.small.revoke,.revoke{background:#8b1a1a}.split-title{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}

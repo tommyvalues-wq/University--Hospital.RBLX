@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Roles &amp; Specialities — UHH Portal</title>
+  <title>Public Lookup — UHH Portal</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -25,45 +25,32 @@
         <a href="roles.html">Roles</a>
         <a href="hcpc-team.html">HCPC Team</a>
         <a href="announcements.html">Announcements</a>
+        <a href="login.html">Staff Login</a>
+        <a href="staff-portal.html">Staff Portal</a>
+        <a href="hcpc-admin.html">HCPC Admin</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
       </nav>
     </div>
   </header>
 
   <div class="page-hero">
     <div class="container">
-      <h1>Group roles &amp; speciality roles</h1>
-      <p>Add your exact Cardiff Ro-University Roblox group ranks here, plus UHH speciality roles.</p>
+      <h1>Public registration lookup</h1>
+      <p>Community members can search a UHH Roblox HCPC-style registration number or username.</p>
     </div>
   </div>
 
   <main class="container" style="padding:34px 0;">
-    <section class="panel">
-      <div class="split-grid">
-        <div>
-          <h3>Group roles / ranks</h3>
-          <form id="groupRoleForm" class="inline-form">
-            <input required id="newGroupRole" placeholder="Add group role, e.g. Consultant" />
-            <button class="primary" type="submit">Add role</button>
-          </form>
-          <div class="actions">
-            <button id="loadDefaultRoles">Load UHH defaults</button>
-            <button id="clearGroupRoles" class="danger-outline">Clear roles</button>
-          </div>
-          <div id="groupRoleChips" class="chip-box"></div>
-        </div>
+    <section class="panel public-panel">
+      <div class="search-row">
+        <input id="publicLookupInput" placeholder="Enter registration number or Roblox username" />
+        <button id="publicLookupButton">Search</button>
+        <button id="clearPublicLookup">Clear</button>
+      </div>
 
-        <div>
-          <h3>Speciality roles</h3>
-          <form id="specialityRoleForm" class="inline-form">
-            <input required id="newSpecialityRole" placeholder="Add speciality, e.g. Trauma Surgery" />
-            <button class="primary" type="submit">Add speciality</button>
-          </form>
-          <div class="actions">
-            <button id="loadDefaultSpecialities">Load speciality defaults</button>
-            <button id="clearSpecialityRoles" class="danger-outline">Clear specialities</button>
-          </div>
-          <div id="specialityRoleChips" class="chip-box"></div>
-        </div>
+      <div id="publicLookupResult" class="lookup-card">
+        Search for a staff member to view their registration status, roles, specialities, tribunal cases and punishments.
       </div>
     </section>
   </main>
@@ -78,84 +65,78 @@
   <script>
     loadAllData();
 
-    function renderRoleChips() {
-      const groupBox = document.getElementById("groupRoleChips");
-      const specBox = document.getElementById("specialityRoleChips");
+    function renderPublicLookup() {
+      const input = document.getElementById("publicLookupInput");
+      const result = document.getElementById("publicLookupResult");
+      const query = input.value.trim().toLowerCase();
 
-      groupBox.innerHTML = groupRoles.length === 0
-        ? `<span class="picker-placeholder">No group roles added yet.</span>`
-        : groupRoles.map((role, index) =>
-            `<span class="chip">${escapeHtml(role)} <button type="button" onclick="removeGroupRole(${index})">&#215;</button></span>`
-          ).join("");
+      if (!query) {
+        result.className = "lookup-card";
+        result.innerHTML = "Search for a staff member to view their registration status, roles, specialities, tribunal cases and punishments.";
+        return;
+      }
 
-      specBox.innerHTML = specialityRoles.length === 0
-        ? `<span class="picker-placeholder">No speciality roles added yet.</span>`
-        : specialityRoles.map((role, index) =>
-            `<span class="chip">${escapeHtml(role)} <button type="button" onclick="removeSpecialityRole(${index})">&#215;</button></span>`
-          ).join("");
+      const record = staff.find(s =>
+        s.registrationNumber.toLowerCase() === query ||
+        s.username.toLowerCase() === query ||
+        s.username.toLowerCase().includes(query)
+      );
+
+      if (!record) {
+        result.className = "lookup-card revoked";
+        result.innerHTML = `<strong>No registration found.</strong><br>No UHH record matched that registration number or username.`;
+        return;
+      }
+
+      const linkedCases = cases.filter(c => c.staffId === record.id || c.registrationNumber === record.registrationNumber);
+      const punishments = linkedCases.filter(c => c.punishment && c.punishment !== "None");
+      const rolesDisplay = (record.roles || []).join(", ") || "None";
+      const specialitiesDisplay = (record.specialityRoles || []).join(", ") || "None";
+
+      result.className = `lookup-card ${record.status === "Active" ? "active" : "revoked"}`;
+      result.innerHTML = `
+        <h3>${record.status === "Active" ? "Valid registration" : "Revoked registration"}</h3>
+        <div class="profile-grid">
+          <div><strong>Roblox username</strong><br>${escapeHtml(record.username)}</div>
+          <div><strong>Display name</strong><br>${escapeHtml(record.displayName || "Not listed")}</div>
+          <div><strong>Registration number</strong><br>${escapeHtml(record.registrationNumber)}</div>
+          <div><strong>Status</strong><br>${escapeHtml(record.status)}</div>
+          <div><strong>Group roles</strong><br>${escapeHtml(rolesDisplay)}</div>
+          <div><strong>Specialities</strong><br>${escapeHtml(specialitiesDisplay)}</div>
+          <div><strong>Department</strong><br>${escapeHtml(record.department)}</div>
+          <div><strong>Rank level</strong><br>${escapeHtml(record.rank)}</div>
+          <div><strong>Registered by</strong><br>${escapeHtml(record.registeredBy)}</div>
+          <div><strong>Registered on</strong><br>${formatDate(record.registeredAt)}</div>
+        </div>
+        ${record.status === "Revoked" ? `<p><strong>Revocation reason:</strong> ${escapeHtml(record.revocationReason || "Not recorded")}</p>` : ""}
+        <h4>Tribunal cases (${linkedCases.length})</h4>
+        ${linkedCases.length === 0
+          ? `<p>No tribunal cases are recorded for this registration.</p>`
+          : linkedCases.map(c => `
+            <div class="case-card ${c.outcome === "Registration Revoked" ? "revoked-case" : ""}">
+              <strong>${escapeHtml(c.caseNumber)} — ${escapeHtml(c.caseType)}</strong><br>
+              <span class="meta">Status: ${escapeHtml(c.status)} · Outcome: ${escapeHtml(c.outcome)} · Punishment: ${escapeHtml(c.punishment || "None")}</span>
+              <p>${escapeHtml(c.summary)}</p>
+              ${c.sanctions ? `<p><strong>Punishment details:</strong> ${escapeHtml(c.sanctions)}</p>` : ""}
+            </div>
+          `).join("")
+        }
+        <h4>Punishments (${punishments.length})</h4>
+        ${punishments.length === 0
+          ? `<p>No punishments are recorded for this registration.</p>`
+          : `<ul>${punishments.map(c => `<li><strong>${escapeHtml(c.punishment)}</strong> — ${escapeHtml(c.caseNumber)} (${escapeHtml(c.outcome)})</li>`).join("")}</ul>`
+        }
+      `;
     }
 
-    document.getElementById("groupRoleForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const value = document.getElementById("newGroupRole").value.trim();
-      if (value && !groupRoles.includes(value)) {
-        groupRoles.push(value);
-        saveGroupRoles();
-        renderRoleChips();
-      }
-      e.target.reset();
+    document.getElementById("publicLookupButton").addEventListener("click", renderPublicLookup);
+    document.getElementById("publicLookupInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") renderPublicLookup();
     });
-
-    document.getElementById("specialityRoleForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const value = document.getElementById("newSpecialityRole").value.trim();
-      if (value && !specialityRoles.includes(value)) {
-        specialityRoles.push(value);
-        saveSpecialityRoles();
-        renderRoleChips();
-      }
-      e.target.reset();
+    document.getElementById("clearPublicLookup").addEventListener("click", () => {
+      document.getElementById("publicLookupInput").value = "";
+      renderPublicLookup();
     });
-
-    document.getElementById("loadDefaultRoles").addEventListener("click", () => {
-      groupRoles = [...new Set([...groupRoles, ...DEFAULT_GROUP_ROLES])];
-      saveGroupRoles();
-      renderRoleChips();
-    });
-
-    document.getElementById("loadDefaultSpecialities").addEventListener("click", () => {
-      specialityRoles = [...new Set([...specialityRoles, ...DEFAULT_SPECIALITIES])];
-      saveSpecialityRoles();
-      renderRoleChips();
-    });
-
-    document.getElementById("clearGroupRoles").addEventListener("click", () => {
-      if (!confirm("Clear all group roles?")) return;
-      groupRoles = [];
-      saveGroupRoles();
-      renderRoleChips();
-    });
-
-    document.getElementById("clearSpecialityRoles").addEventListener("click", () => {
-      if (!confirm("Clear all speciality roles?")) return;
-      specialityRoles = [];
-      saveSpecialityRoles();
-      renderRoleChips();
-    });
-
-    window.removeGroupRole = function(index) {
-      groupRoles.splice(index, 1);
-      saveGroupRoles();
-      renderRoleChips();
-    };
-
-    window.removeSpecialityRole = function(index) {
-      specialityRoles.splice(index, 1);
-      saveSpecialityRoles();
-      renderRoleChips();
-    };
-
-    renderRoleChips();
   </script>
 </body>
 </html>

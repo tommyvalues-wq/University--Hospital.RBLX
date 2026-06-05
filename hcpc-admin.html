@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Announcements — UHH Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="login.html">Staff Login</a>
+        <a href="staff-portal.html">Staff Portal</a>
+        <a href="hcpc-admin.html">HCPC Admin</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="container">
+      <h1>Create hospital announcements</h1>
+      <p>Post news to the dashboard and optionally send the same announcement to a Discord webhook.</p>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="panel warning-panel">
+      <div class="section-title">
+        <h2>Discord webhook settings</h2>
+        <p>Paste your webhook only while using the page. Do not upload webhook URLs to GitHub because they can be stolen.</p>
+      </div>
+      <div class="form-grid">
+        <label class="full">
+          Discord webhook URL
+          <input id="discordWebhookUrl" type="password" placeholder="https://discord.com/api/webhooks/..." />
+          <small>Saved only in this browser using localStorage.</small>
+        </label>
+        <button class="primary" type="button" id="saveWebhookBtn">Save webhook in this browser</button>
+        <button type="button" id="clearWebhookBtn">Clear webhook</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>New announcement</h2>
+        <p>This stores announcements in the browser using localStorage. Tick Discord if you also want to post it to your server.</p>
+      </div>
+
+      <form id="announcementForm" class="form-grid">
+        <label>
+          Announcement title
+          <input required id="announcementTitle" placeholder="e.g. New training session announced" maxlength="90" />
+        </label>
+
+        <label>
+          Category
+          <select id="announcementCategory">
+            <option>Hospital News</option>
+            <option>Staff Notice</option>
+            <option>Training</option>
+            <option>Service Update</option>
+            <option>Emergency Notice</option>
+          </select>
+        </label>
+
+        <label>
+          Posted by
+          <input required id="announcementAuthor" placeholder="Your Roblox username or role" />
+        </label>
+
+        <label>
+          Optional link
+          <input id="announcementLink" placeholder="https://discord.gg/example" />
+        </label>
+
+        <label class="full">
+          Announcement text
+          <textarea required id="announcementText" placeholder="Write the update staff should see on the dashboard..."></textarea>
+        </label>
+
+        <label class="full">
+          Optional image
+          <input id="announcementImage" type="file" accept="image/*" />
+          <small>Images are saved into the browser. Use small images where possible.</small>
+        </label>
+
+        <label class="checkbox-line full">
+          <input id="sendToDiscord" type="checkbox" />
+          Send this announcement to Discord too
+        </label>
+
+        <button class="primary" type="submit">Publish announcement</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Existing announcements</h2>
+        <p>Newest announcements appear first on the dashboard.</p>
+      </div>
+      <div id="announcementManagerList" class="news-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
+    renderAnnouncementManager();
+
+    const webhookInput = document.getElementById("discordWebhookUrl");
+    webhookInput.value = getDiscordWebhookUrl();
+
+    document.getElementById("saveWebhookBtn").addEventListener("click", () => {
+      setDiscordWebhookUrl(webhookInput.value);
+      alert("Webhook saved in this browser only.");
+    });
+
+    document.getElementById("clearWebhookBtn").addEventListener("click", () => {
+      setDiscordWebhookUrl("");
+      webhookInput.value = "";
+      alert("Webhook cleared from this browser.");
+    });
+
+    function readImageAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve("");
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById("announcementForm").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const imageInput = document.getElementById("announcementImage");
+      const announcement = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        title: document.getElementById("announcementTitle").value.trim(),
+        category: document.getElementById("announcementCategory").value,
+        author: document.getElementById("announcementAuthor").value.trim(),
+        link: document.getElementById("announcementLink").value.trim(),
+        text: document.getElementById("announcementText").value.trim(),
+        image: await readImageAsDataUrl(imageInput.files[0]),
+        createdAt: new Date().toISOString()
+      };
+
+      announcements.push(announcement);
+      saveAnnouncements();
+
+      let discordMessage = "";
+      if (document.getElementById("sendToDiscord").checked) {
+        const result = await sendAnnouncementToDiscord(announcement, webhookInput.value || getDiscordWebhookUrl());
+        discordMessage = "
+
+Discord: " + result.message;
+      }
+
+      e.target.reset();
+      webhookInput.value = getDiscordWebhookUrl();
+      renderAnnouncementManager();
+      alert("Announcement published to the dashboard." + discordMessage);
+    });
+  </script>
+</body>
+</html>

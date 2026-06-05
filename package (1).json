@@ -1,0 +1,18 @@
+# UHH Discord Website Status Bot
+
+This optional Node.js bot checks your GitHub Pages website and sends a Discord webhook message when the site changes from UP to DOWN or DOWN to UP.
+
+## Setup
+
+1. Install Node.js 18 or newer.
+2. Create a Discord webhook in the channel where you want status alerts.
+3. Copy `.env.example` to `.env`.
+4. Edit `.env` with your website URL and webhook URL.
+5. Run:
+
+```bash
+npm install
+npm start
+```
+
+Keep this running on your PC, a Raspberry Pi, or a free server. Do not upload your real `.env` file to GitHub.
