@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Log — UHH Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="container">
+      <h1>Staff log</h1>
+      <p>All registrations are saved locally in this browser.</p>
+    </div>
+  </div>
+
+  <main class="container" style="padding:34px 0;">
+    <section class="panel">
+      <div class="actions" style="margin-bottom:20px;">
+        <button id="exportJson">Export JSON</button>
+        <button id="exportCsv">Export CSV</button>
+        <a href="register.html" class="button-link primary">+ Register new staff</a>
+        <button id="resetData" class="danger-outline">Reset all registry data</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Registration No.</th>
+              <th>Roblox Username</th>
+              <th>Roles</th>
+              <th>Specialities</th>
+              <th>Department</th>
+              <th>Rank</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="staffTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
+
+    function renderStaff(list) {
+      list = list || staff;
+      const tbody = document.getElementById("staffTable");
+      tbody.innerHTML = "";
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9">No staff records found. <a href="register.html">Register a staff member</a>.</td></tr>`;
+        return;
+      }
+
+      list.slice().sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt)).forEach(record => {
+        const rolesDisplay = (record.roles || []).join(", ") || "None";
+        const specialitiesDisplay = (record.specialityRoles || []).join(", ") || "None";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="badge ${record.status === "Active" ? "active-badge" : "revoked-badge"}">${escapeHtml(record.status)}</span></td>
+          <td><strong>${escapeHtml(record.registrationNumber)}</strong></td>
+          <td>${escapeHtml(record.username)}${record.displayName ? `<br><small>${escapeHtml(record.displayName)}</small>` : ""}</td>
+          <td>${escapeHtml(rolesDisplay)}</td>
+          <td>${escapeHtml(specialitiesDisplay)}</td>
+          <td>${escapeHtml(record.department)}</td>
+          <td>${escapeHtml(record.rank)}</td>
+          <td>${formatDate(record.registeredAt)}<br><small>By ${escapeHtml(record.registeredBy)}</small></td>
+          <td>
+            <div class="row-actions">
+              ${record.status === "Active"
+                ? `<button class="small revoke" onclick="revokeRecord('${record.id}')">Revoke</button>`
+                : `<button class="small restore" onclick="restoreRecord('${record.id}')">Restore</button>`
+              }
+              <button class="small" onclick="deleteRecord('${record.id}')">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.revokeRecord = function(id) {
+      const record = staff.find(s => s.id === id);
+      if (!record) return;
+      const reason = prompt("Reason for revocation:", "No reason provided");
+      record.status = "Revoked";
+      record.revokedAt = new Date().toISOString();
+      record.revocationReason = reason || "No reason provided";
+      saveStaff();
+      renderStaff();
+    };
+
+    window.restoreRecord = function(id) {
+      const record = staff.find(s => s.id === id);
+      if (!record) return;
+      record.status = "Active";
+      record.revokedAt = null;
+      record.revocationReason = "";
+      saveStaff();
+      renderStaff();
+    };
+
+    window.deleteRecord = function(id) {
+      if (!confirm("Delete this staff record permanently?")) return;
+      staff = staff.filter(s => s.id !== id);
+      saveStaff();
+      renderStaff();
+    };
+
+    document.getElementById("exportJson").addEventListener("click", () => {
+      const data = { staff, cases, hcpcTeam, groupRoles, specialityRoles };
+      downloadFile("uhh-registry-full-export.json", JSON.stringify(data, null, 2), "application/json");
+    });
+
+    document.getElementById("exportCsv").addEventListener("click", () => {
+      const headers = ["Status", "Registration Number", "Username", "Display Name", "Department", "Roles", "Specialities", "Rank", "Registered By", "Registered At", "Revoked At", "Revocation Reason", "Notes"];
+      const rows = staff.map(s => [
+        s.status, s.registrationNumber, s.username, s.displayName, s.department,
+        (s.roles || []).join("; "), (s.specialityRoles || []).join("; "), s.rank,
+        s.registeredBy, s.registeredAt, s.revokedAt || "", s.revocationReason || "", s.notes || ""
+      ]);
+      const csv = [headers, ...rows]
+        .map(row => row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(","))
+        .join("\n");
+      downloadFile("uhh-staff-registry.csv", csv, "text/csv");
+    });
+
+    document.getElementById("resetData").addEventListener("click", () => {
+      if (!confirm("Reset all saved registry, tribunal, team and role data?")) return;
+      staff = [];
+      cases = [];
+      hcpcTeam = [];
+      groupRoles = [...DEFAULT_GROUP_ROLES];
+      specialityRoles = [...DEFAULT_SPECIALITIES];
+      saveStaff();
+      saveCases();
+      saveTeam();
+      saveGroupRoles();
+      saveSpecialityRoles();
+      renderStaff();
+    });
+
+    renderStaff();
+  </script>
+</body>
+</html>

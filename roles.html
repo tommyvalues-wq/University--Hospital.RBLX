@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roles &amp; Specialities — UHH Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Staff Registration &amp; Tribunal Portal</span>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Dashboard</a>
+        <a href="register.html">Register</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="tribunal.html">Tribunal</a>
+        <a href="staff.html">Staff Log</a>
+        <a href="roles.html">Roles</a>
+        <a href="hcpc-team.html">HCPC Team</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-hero">
+    <div class="container">
+      <h1>Group roles &amp; speciality roles</h1>
+      <p>Add your exact Cardiff Ro-University Roblox group ranks here, plus UHH speciality roles.</p>
+    </div>
+  </div>
+
+  <main class="container" style="padding:34px 0;">
+    <section class="panel">
+      <div class="split-grid">
+        <div>
+          <h3>Group roles / ranks</h3>
+          <form id="groupRoleForm" class="inline-form">
+            <input required id="newGroupRole" placeholder="Add group role, e.g. Consultant" />
+            <button class="primary" type="submit">Add role</button>
+          </form>
+          <div class="actions">
+            <button id="loadDefaultRoles">Load UHH defaults</button>
+            <button id="clearGroupRoles" class="danger-outline">Clear roles</button>
+          </div>
+          <div id="groupRoleChips" class="chip-box"></div>
+        </div>
+
+        <div>
+          <h3>Speciality roles</h3>
+          <form id="specialityRoleForm" class="inline-form">
+            <input required id="newSpecialityRole" placeholder="Add speciality, e.g. Trauma Surgery" />
+            <button class="primary" type="submit">Add speciality</button>
+          </form>
+          <div class="actions">
+            <button id="loadDefaultSpecialities">Load speciality defaults</button>
+            <button id="clearSpecialityRoles" class="danger-outline">Clear specialities</button>
+          </div>
+          <div id="specialityRoleChips" class="chip-box"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      UHH Staff Registration Portal · Fictional Roblox healthcare registry · Not NHS, Cardiff University, Roblox, or HCPC affiliated
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    loadAllData();
+
+    function renderRoleChips() {
+      const groupBox = document.getElementById("groupRoleChips");
+      const specBox = document.getElementById("specialityRoleChips");
+
+      groupBox.innerHTML = groupRoles.length === 0
+        ? `<span class="picker-placeholder">No group roles added yet.</span>`
+        : groupRoles.map((role, index) =>
+            `<span class="chip">${escapeHtml(role)} <button type="button" onclick="removeGroupRole(${index})">&#215;</button></span>`
+          ).join("");
+
+      specBox.innerHTML = specialityRoles.length === 0
+        ? `<span class="picker-placeholder">No speciality roles added yet.</span>`
+        : specialityRoles.map((role, index) =>
+            `<span class="chip">${escapeHtml(role)} <button type="button" onclick="removeSpecialityRole(${index})">&#215;</button></span>`
+          ).join("");
+    }
+
+    document.getElementById("groupRoleForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const value = document.getElementById("newGroupRole").value.trim();
+      if (value && !groupRoles.includes(value)) {
+        groupRoles.push(value);
+        saveGroupRoles();
+        renderRoleChips();
+      }
+      e.target.reset();
+    });
+
+    document.getElementById("specialityRoleForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const value = document.getElementById("newSpecialityRole").value.trim();
+      if (value && !specialityRoles.includes(value)) {
+        specialityRoles.push(value);
+        saveSpecialityRoles();
+        renderRoleChips();
+      }
+      e.target.reset();
+    });
+
+    document.getElementById("loadDefaultRoles").addEventListener("click", () => {
+      groupRoles = [...new Set([...groupRoles, ...DEFAULT_GROUP_ROLES])];
+      saveGroupRoles();
+      renderRoleChips();
+    });
+
+    document.getElementById("loadDefaultSpecialities").addEventListener("click", () => {
+      specialityRoles = [...new Set([...specialityRoles, ...DEFAULT_SPECIALITIES])];
+      saveSpecialityRoles();
+      renderRoleChips();
+    });
+
+    document.getElementById("clearGroupRoles").addEventListener("click", () => {
+      if (!confirm("Clear all group roles?")) return;
+      groupRoles = [];
+      saveGroupRoles();
+      renderRoleChips();
+    });
+
+    document.getElementById("clearSpecialityRoles").addEventListener("click", () => {
+      if (!confirm("Clear all speciality roles?")) return;
+      specialityRoles = [];
+      saveSpecialityRoles();
+      renderRoleChips();
+    });
+
+    window.removeGroupRole = function(index) {
+      groupRoles.splice(index, 1);
+      saveGroupRoles();
+      renderRoleChips();
+    };
+
+    window.removeSpecialityRole = function(index) {
+      specialityRoles.splice(index, 1);
+      saveSpecialityRoles();
+      renderRoleChips();
+    };
+
+    renderRoleChips();
+  </script>
+</body>
+</html>
