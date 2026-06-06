@@ -21,7 +21,7 @@ router.get('/roblox', (req, res) => {
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: 'code',
-    scope: 'openid profile',
+    scope: 'profile',
     state: 'uhh_staff_portal'
   });
 
