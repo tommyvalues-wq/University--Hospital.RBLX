@@ -5,11 +5,19 @@ function getToken() {
 }
 
 function setToken(token) {
-  localStorage.setItem("uhh_auth_token", token);
+  if (token) {
+    localStorage.setItem("uhh_auth_token", token);
+  }
+}
+
+function clearLogin() {
+  localStorage.removeItem("uhh_auth_token");
+  localStorage.removeItem("uhh_roblox_id");
+  localStorage.removeItem("uhh_roblox_name");
 }
 
 function logout() {
-  localStorage.removeItem("uhh_auth_token");
+  clearLogin();
   window.location.href = "login.html";
 }
 
@@ -38,31 +46,60 @@ function startRobloxLogin() {
 
 function handleLoginRedirect() {
   const params = new URLSearchParams(window.location.search);
+  const loginStatus = params.get("login");
 
-  if (params.get("login") === "success") {
+  if (loginStatus === "success") {
     const robloxId = params.get("robloxId");
     const robloxName = params.get("robloxName");
+    const token = params.get("token");
 
-    if (robloxId) {
-      localStorage.setItem("uhh_roblox_id", robloxId);
-    }
+    if (robloxId) localStorage.setItem("uhh_roblox_id", robloxId);
+    if (robloxName) localStorage.setItem("uhh_roblox_name", robloxName);
+    if (token) setToken(token);
 
-    if (robloxName) {
-      localStorage.setItem("uhh_roblox_name", robloxName);
-    }
+    showStaffPortal();
 
     window.history.replaceState({}, document.title, "staff-portal.html");
-
-    const loginBox = document.getElementById("loginBox");
-    const portal = document.getElementById("staffPortalContent");
-
-    if (loginBox) loginBox.style.display = "none";
-    if (portal) portal.style.display = "block";
   }
 
-  if (params.get("login") === "failed") {
-    alert("Login failed. Please try again.");
+  if (loginStatus === "failed") {
+    clearLogin();
+    alert("Roblox login failed. Please try again.");
   }
 }
 
-document.addEventListener("DOMContentLoaded", handleLoginRedirect);
+function showStaffPortal() {
+  const loginBox = document.getElementById("loginBox");
+  const portalContent = document.getElementById("staffPortalContent");
+  const robloxNameBox = document.getElementById("robloxName");
+
+  if (loginBox) loginBox.style.display = "none";
+  if (portalContent) portalContent.style.display = "block";
+
+  const robloxName = localStorage.getItem("uhh_roblox_name");
+  if (robloxNameBox && robloxName) {
+    robloxNameBox.textContent = robloxName;
+  }
+}
+
+function requireLogin() {
+  const robloxId = localStorage.getItem("uhh_roblox_id");
+
+  if (robloxId) {
+    showStaffPortal();
+    return true;
+  }
+
+  const loginBox = document.getElementById("loginBox");
+  const portalContent = document.getElementById("staffPortalContent");
+
+  if (loginBox) loginBox.style.display = "block";
+  if (portalContent) portalContent.style.display = "none";
+
+  return false;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  handleLoginRedirect();
+  requireLogin();
+});
