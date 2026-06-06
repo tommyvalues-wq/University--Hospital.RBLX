@@ -3,88 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard · UHH</title>
+  <title>Staff Portal Login — UHH</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="UHH dashboard">
-        <div class="brand-mark">UHH</div>
-        <div>
-          <strong>University Hospital Healthcare</strong>
-          <span>Caring · Safe · Respectful</span>
-        </div>
-      </a>
-      <nav class="main-nav" aria-label="Main navigation">
-        <a href="index.html">Dashboard</a>
-        <a href="login.html">Staff Portal</a>
-        <a href="lookup.html">Lookup</a>
-        <a href="announcements.html">Announcements</a>
-        <a href="vacancies.html">Vacancies</a>
-        <a href="info.html">Info</a>
-      </nav>
-    </div>
-  </header>
-  <section class="hero nhs-hero">
-    <div class="container hero-grid">
+<header class="topbar">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <div class="brand-mark">UHH</div>
       <div>
-        <p class="tag">UHH Digital Hospital</p>
-        <h1>Welcome to University Hospital Healthcare</h1>
-        <p class="lead">Find hospital announcements, current vacancies, public staff lookup and secure staff resources from one central dashboard.</p>
-        <div class="notice blue-notice"><strong>Notice:</strong> Staff management tools are now inside the Staff Portal. Public users only see public-facing pages.</div>
+        <strong>University Hospital Healthcare</strong>
+        <span>Caring · Safe · Respectful</span>
       </div>
-      <div class="status-card quick-search">
-        <h2>What are you looking for today?</h2>
-        <div class="portal-actions stacked">
-          <a class="button-link" href="login.html">Staff Portal</a>
-          <a class="button-link secondary" href="lookup.html">Lookup Staff</a>
-          <a class="button-link secondary" href="vacancies.html">Current Vacancies</a>
-        </div>
-      </div>
-    </div>
+    </a>
+    <nav class="main-nav">
+      <a href="index.html">Dashboard</a>
+      <a href="login.html">Staff Portal</a>
+      <a href="lookup.html">Lookup</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="vacancies.html">Vacancies</a>
+      <a href="info.html">Info</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Staff Portal Login</h1>
+    <p>Login with Roblox to access secure UHH staff tools.</p>
+  </div>
+</section>
+
+<main class="container" style="padding:34px 0;">
+  <section class="panel">
+    <h2>Login required</h2>
+    <p>Only registered UHH staff may access the staff portal.</p>
+
+    <a class="button-link primary" href="https://uhh-backend.onrender.com/auth/roblox">
+      Login with Roblox
+    </a>
   </section>
+</main>
 
-  <main class="container main-content">
-    <section class="panel hospital-news-panel top-news">
-      <div class="section-title split-title">
-        <div>
-          <h2>Hospital News</h2>
-          <p>Latest UHH announcements, service updates and staff notices.</p>
-        </div>
-        <a class="button-link" href="announcements.html">View all news</a>
-      </div>
-      <div id="hospitalNewsList" class="news-list"></div>
-    </section>
-
-    <section class="quick-link-grid" aria-label="Popular pages">
-      <a class="nhs-tile" href="login.html"><span>Staff Portal</span><p>Login with Roblox username and HCPC PIN.</p></a>
-      <a class="nhs-tile" href="lookup.html"><span>Lookup</span><p>Check a UHH staff registration.</p></a>
-      <a class="nhs-tile" href="announcements.html"><span>Announcements</span><p>Read hospital news and updates.</p></a>
-      <a class="nhs-tile" href="vacancies.html"><span>Vacancies</span><p>View current open roles.</p></a>
-      <a class="nhs-tile" href="info.html"><span>Information</span><p>Important UHH guidance and notices.</p></a>
-    </section>
-
-    <section class="panel two-column-info">
-      <div>
-        <h2>Working at UHH</h2>
-        <p>UHH supports staff with clear guidance, transparent request processes and easy access to clinical roleplay resources.</p>
-        <a class="button-link" href="vacancies.html">View vacancies</a>
-      </div>
-      <div>
-        <h2>Staff services</h2>
-        <p>Registered staff can request leave, speciality changes or discharge, and HCPC can manage profiles from inside the secure portal.</p>
-        <a class="button-link secondary" href="login.html">Go to staff login</a>
-      </div>
-    </section>
-  </main>
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div><strong>University Hospital Healthcare</strong><p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p></div>
-      <div><strong>Useful links</strong><p><a href="login.html">Staff Portal</a> · <a href="lookup.html">Lookup</a> · <a href="vacancies.html">Vacancies</a></p></div>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <strong>University Hospital Healthcare</strong>
+      <p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p>
     </div>
-  </footer>
-  <script src="shared.js"></script>
-  <script>loadAllData(); updateStats(); renderHospitalNews(4);</script>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
 </body>
 </html>
