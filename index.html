@@ -1,1 +1,39 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>HCPC Admin</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container header-inner"><div class="brand"><div class="brand-mark">UHH</div><div><strong>University Hospital Healthcare</strong><span>Staff Registration &amp; Tribunal Portal</span></div></div><nav><a href="index.html">Dashboard</a><a href="register.html">Register</a><a href="lookup.html">Lookup</a><a href="tribunal.html">Tribunal</a><a href="staff.html">Staff Log</a><a href="roles.html">Roles</a><a href="hcpc-team.html">HCPC Team</a><a href="announcements.html">Announcements</a><a href="login.html">Staff Login</a><a href="staff-portal.html">Staff Portal</a><a href="hcpc-admin.html">HCPC Admin</a><a href="vacancies.html">Vacancies</a><a href="info.html">Info</a></nav></div></header><div class="page-hero"><div class="container"><h1>HCPC Admin</h1></div></div><main class="container" style="padding:34px 0;"><section class="panel"><h2>HCPC Admin</h2><div id="adminNotice"></div><p>Review requests, update staff records, add documents, vacancies and public information pages.</p></section><section class="panel"><h2>Pending staff requests</h2><div id="pendingRequests"></div></section><section class="panel"><h2>Edit current staff</h2><div id="hcpcStaffEditor"></div></section><section class="panel"><h2>Add document / guide / rule</h2><form id="docForm" class="form-grid"><label>Title<input id="docTitle" required></label><label>Category<input id="docCategory" placeholder="Guide, Rule, Policy"></label><label class="full">Document URL<input id="docUrl" required placeholder="Google Doc, PDF, GitHub file, etc."></label><label class="full">Description<textarea id="docDescription"></textarea></label><button class="primary" type="submit">Add document</button></form></section><section class="panel"><h2>Add vacancy</h2><form id="vacancyForm" class="form-grid"><label>Title<input id="vacTitle" required></label><label>Department<input id="vacDept"></label><label class="full">Description<textarea id="vacDesc"></textarea></label><label class="full">Link<input id="vacUrl" placeholder="Optional application link"></label><button class="primary" type="submit">Post vacancy</button></form></section><section class="panel"><h2>Add information page/update</h2><form id="infoForm" class="form-grid"><label>Title<input id="infoTitle" required></label><label class="full">Information<textarea id="infoBody" required></textarea></label><button class="primary" type="submit">Publish info</button></form></section></main><footer><div class="container">UHH Staff Portal · Fictional Roblox healthcare registry</div></footer><script src="shared.js"></script><script>loadPortalData();const admin=requireHCPC();if(admin){document.getElementById('adminNotice').innerHTML=buildPortalNotice();renderRequestQueues();renderHCPCStaffEditor();document.getElementById('docForm').addEventListener('submit',e=>{e.preventDefault();staffDocuments.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title:docTitle.value.trim(),category:docCategory.value.trim(),url:docUrl.value.trim(),description:docDescription.value.trim(),createdAt:new Date().toISOString(),createdBy:admin.username});saveStaffDocuments();e.target.reset();alert('Document added.');});document.getElementById('vacancyForm').addEventListener('submit',e=>{e.preventDefault();vacancies.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title:vacTitle.value.trim(),department:vacDept.value.trim(),description:vacDesc.value.trim(),url:vacUrl.value.trim(),createdAt:new Date().toISOString(),createdBy:admin.username});saveVacancies();e.target.reset();alert('Vacancy posted.');});document.getElementById('infoForm').addEventListener('submit',e=>{e.preventDefault();infoPages.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title:infoTitle.value.trim(),body:infoBody.value.trim(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:admin.username});saveInfoPages();e.target.reset();alert('Information page published.');});}</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCPC Admin moved · UHH</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="UHH dashboard">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Caring · Safe · Respectful</span>
+        </div>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Dashboard</a>
+        <a href="login.html">Staff Portal</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
+  <div class="page-hero"><div class="container"><h1>HCPC Admin has moved</h1><p>All HCPC tools now live inside the Staff Portal.</p><p><a class="button-link" href="staff-portal.html">Open Staff Portal</a></p></div></div>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><strong>University Hospital Healthcare</strong><p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p></div>
+      <div><strong>Useful links</strong><p><a href="login.html">Staff Portal</a> · <a href="lookup.html">Lookup</a> · <a href="vacancies.html">Vacancies</a></p></div>
+    </div>
+  </footer>
+  <script src="shared.js"></script>
+  
+</body>
+</html>

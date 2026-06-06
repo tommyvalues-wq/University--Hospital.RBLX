@@ -17,3 +17,7 @@ Setup:
 5. Run `npm start`.
 
 Important: the included frontend is a localStorage prototype. For a real staff portal, connect this backend to a real database such as Supabase, Firebase, SQLite, or PostgreSQL.
+
+
+## Discord vacancy channel syncing
+Browsers cannot read Discord channels directly. To relay updates from channel `1511950462058889326`, run a Discord bot with `DISCORD_BOT_TOKEN`, `VACANCY_CHANNEL_ID=1511950462058889326`, and a server endpoint/database that writes updates into `uhh_discord_incoming_updates_v1` or your production database. Never put bot tokens in GitHub Pages files.

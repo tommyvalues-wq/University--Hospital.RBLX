@@ -1,1 +1,24 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Staff Login</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar"><div class="container header-inner"><div class="brand"><div class="brand-mark">UHH</div><div><strong>University Hospital Healthcare</strong><span>Staff Registration &amp; Tribunal Portal</span></div></div><nav><a href="index.html">Dashboard</a><a href="register.html">Register</a><a href="lookup.html">Lookup</a><a href="tribunal.html">Tribunal</a><a href="staff.html">Staff Log</a><a href="roles.html">Roles</a><a href="hcpc-team.html">HCPC Team</a><a href="announcements.html">Announcements</a><a href="login.html">Staff Login</a><a href="staff-portal.html">Staff Portal</a><a href="hcpc-admin.html">HCPC Admin</a><a href="vacancies.html">Vacancies</a><a href="info.html">Info</a></nav></div></header><div class="page-hero"><div class="container"><h1>Staff Login</h1></div></div><main class="container" style="padding:34px 0;"><section class="panel"><h2>Log in with Roblox</h2><p class="muted">Static version: enter your Roblox username and HCPC PIN from your staff registration. Real Roblox OAuth requires the included backend.</p><div id="prototypeNotice"></div><form id="loginForm" class="form-grid"><label>Roblox username<input id="loginUsername" required placeholder="Your Roblox username"></label><label>HCPC PIN<input id="loginPin" required placeholder="Your HCPC PIN"></label><button class="primary" type="submit">Log in</button></form></section></main><footer><div class="container">UHH Staff Portal · Fictional Roblox healthcare registry</div></footer><script src="shared.js"></script><script>loadPortalData();document.getElementById('prototypeNotice').innerHTML=buildPortalNotice();document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();const r=findStaffForLogin(document.getElementById('loginUsername').value,document.getElementById('loginPin').value);if(!r){alert('Login failed. You must be an active registered staff member and your HCPC PIN must match.');return;}loginStaff(r);const next=new URLSearchParams(location.search).get('next')||'staff-portal.html';location.href=next;});</script></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Staff Login</title><link rel="stylesheet" href="styles.css"></head><body><header class="topbar">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="UHH dashboard">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Caring · Safe · Respectful</span>
+        </div>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Dashboard</a>
+        <a href="login.html">Staff Portal</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header><div class="page-hero"><div class="container"><h1>Staff Login</h1></div></div><main class="container" style="padding:34px 0;"><section class="panel"><h2>Log in with Roblox</h2><p class="muted">Static version: enter your Roblox username and HCPC PIN from your staff registration. Real Roblox OAuth requires the included backend.</p><div id="prototypeNotice"></div><form id="loginForm" class="form-grid"><label>Roblox username<input id="loginUsername" required placeholder="Your Roblox username"></label><label>HCPC PIN<input id="loginPin" required placeholder="Your HCPC PIN"></label><button class="primary" type="submit">Log in</button></form></section></main><footer class="site-footer">
+    <div class="container footer-grid">
+      <div><strong>University Hospital Healthcare</strong><p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p></div>
+      <div><strong>Useful links</strong><p><a href="login.html">Staff Portal</a> · <a href="lookup.html">Lookup</a> · <a href="vacancies.html">Vacancies</a></p></div>
+    </div>
+  </footer><script src="shared.js"></script><script>loadPortalData();document.getElementById('prototypeNotice').innerHTML=buildPortalNotice();document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();const r=findStaffForLogin(document.getElementById('loginUsername').value,document.getElementById('loginPin').value);if(!r){alert('Login failed. You must be an active registered staff member and your HCPC PIN must match.');return;}loginStaff(r);const next=new URLSearchParams(location.search).get('next')||'staff-portal.html';location.href=next;});</script></body></html>
