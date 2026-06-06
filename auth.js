@@ -14,9 +14,9 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'API request failed');
-  return data;
+ const redirectUrl = new URL(
+  `${process.env.PUBLIC_SITE_URL}/staff-portal.html`
+);
 }
 
 function startRobloxLogin() {
