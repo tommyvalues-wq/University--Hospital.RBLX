@@ -1,23 +1,56 @@
-# UHH Secure Backend / Discord Sync
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Announcements — UHH</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <div class="brand-mark">UHH</div>
+        <div>
+          <strong>University Hospital Healthcare</strong>
+          <span>Caring · Safe · Respectful</span>
+        </div>
+      </a>
 
-GitHub Pages cannot securely verify Roblox OAuth, protect staff-only data, or read Discord channels because all frontend code is public. This backend is the safe place for secrets.
+      <nav class="main-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="login.html">Staff Portal</a>
+        <a href="lookup.html">Lookup</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="vacancies.html">Vacancies</a>
+        <a href="info.html">Info</a>
+      </nav>
+    </div>
+  </header>
 
-What it is designed for:
-- Real Roblox OAuth login callback.
-- Checking logged-in Roblox users against your staff database.
-- Verifying HCPC PIN server-side.
-- Discord bot access to the vacancies channel `1511950462058889326`.
-- Website up/down checks sent to your Discord webhook.
+  <section class="page-hero">
+    <div class="container">
+      <h1>Hospital Announcements</h1>
+      <p>Latest UHH Roblox hospital news, notices and updates.</p>
+    </div>
+  </section>
 
-Setup:
-1. Run `npm install`.
-2. Copy `.env.example` to `.env`.
-3. Add your real Discord bot token, webhook URL, and Roblox OAuth app details.
-4. Invite the Discord bot to your server with permission to read the vacancies channel.
-5. Run `npm start`.
+  <main class="container" style="padding:34px 0;">
+    <section class="panel">
+      <h2>Latest News</h2>
+      <p>No announcements have been posted yet.</p>
+    </section>
+  </main>
 
-Important: the included frontend is a localStorage prototype. For a real staff portal, connect this backend to a real database such as Supabase, Firebase, SQLite, or PostgreSQL.
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <strong>University Hospital Healthcare</strong>
+        <p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p>
+      </div>
+    </div>
+  </footer>
 
-
-## Discord vacancy channel syncing
-Browsers cannot read Discord channels directly. To relay updates from channel `1511950462058889326`, run a Discord bot with `DISCORD_BOT_TOKEN`, `VACANCY_CHANNEL_ID=1511950462058889326`, and a server endpoint/database that writes updates into `uhh_discord_incoming_updates_v1` or your production database. Never put bot tokens in GitHub Pages files.
+  <script src="shared.js"></script>
+</body>
+</html>
