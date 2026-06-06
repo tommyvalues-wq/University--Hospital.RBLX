@@ -22,3 +22,4 @@ async function api(path, options = {}) {
 function startRobloxLogin() {
   window.location.href = `${API_BASE}/auth/roblox`;
 }
+export default router;
