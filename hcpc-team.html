@@ -58,6 +58,10 @@ let hcpcTeam = loadJson(TEAM_KEY, []);
 let groupRoles = loadJson(GROUP_ROLES_KEY, DEFAULT_GROUP_ROLES);
 let specialityRoles = loadJson(SPECIALITY_ROLES_KEY, DEFAULT_SPECIALITIES);
 
+function el(id) {
+  return document.getElementById(id);
+}
+
 function loadJson(key, fallback) {
   try {
     const value = JSON.parse(localStorage.getItem(key));
@@ -71,11 +75,25 @@ function saveJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function saveStaff() { saveJson(STORAGE_KEY, staff); }
-function saveCases() { saveJson(CASES_KEY, cases); }
-function saveTeam() { saveJson(TEAM_KEY, hcpcTeam); }
-function saveGroupRoles() { saveJson(GROUP_ROLES_KEY, groupRoles); }
-function saveSpecialityRoles() { saveJson(SPECIALITY_ROLES_KEY, specialityRoles); }
+function saveStaff() {
+  saveJson(STORAGE_KEY, staff);
+}
+
+function saveCases() {
+  saveJson(CASES_KEY, cases);
+}
+
+function saveTeam() {
+  saveJson(TEAM_KEY, hcpcTeam);
+}
+
+function saveGroupRoles() {
+  saveJson(GROUP_ROLES_KEY, groupRoles);
+}
+
+function saveSpecialityRoles() {
+  saveJson(SPECIALITY_ROLES_KEY, specialityRoles);
+}
 
 function generateRegistrationNumber() {
   const year = new Date().getFullYear();
@@ -92,6 +110,7 @@ function generateCaseNumber() {
 
 function formatDate(iso) {
   if (!iso) return "Not recorded";
+
   return new Date(iso).toLocaleString("en-GB", {
     dateStyle: "medium",
     timeStyle: "short"
@@ -109,24 +128,29 @@ function escapeHtml(value) {
 }
 
 function updateStats() {
-  document.getElementById("totalStaff").textContent = staff.length;
-  document.getElementById("activeStaff").textContent = staff.filter(s => s.status === "Active").length;
-  document.getElementById("revokedStaff").textContent = staff.filter(s => s.status === "Revoked").length;
-  document.getElementById("totalCases").textContent = cases.length;
+  if (el("totalStaff")) el("totalStaff").textContent = staff.length;
+  if (el("activeStaff")) el("activeStaff").textContent = staff.filter(s => s.status === "Active").length;
+  if (el("revokedStaff")) el("revokedStaff").textContent = staff.filter(s => s.status === "Revoked").length;
+  if (el("totalCases")) el("totalCases").textContent = cases.length;
 }
 
 function populateSelect(selectId, values, placeholder) {
-  const select = document.getElementById(selectId);
+  const select = el(selectId);
   if (!select) return;
+
   const current = select.value;
   select.innerHTML = `<option value="">${placeholder}</option>`;
+
   values.forEach(value => {
     const option = document.createElement("option");
     option.value = value;
     option.textContent = value;
     select.appendChild(option);
   });
-  if (values.includes(current)) select.value = current;
+
+  if (values.includes(current)) {
+    select.value = current;
+  }
 }
 
 function refreshRoleSelects() {
@@ -136,7 +160,9 @@ function refreshRoleSelects() {
 }
 
 function renderStaff(list = staff) {
-  const staffTable = document.getElementById("staffTable");
+  const staffTable = el("staffTable");
+  if (!staffTable) return;
+
   staffTable.innerHTML = "";
 
   if (list.length === 0) {
@@ -151,6 +177,7 @@ function renderStaff(list = staff) {
     .sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt))
     .forEach(record => {
       const tr = document.createElement("tr");
+
       tr.innerHTML = `
         <td><span class="badge ${record.status === "Active" ? "active-badge" : "revoked-badge"}">${escapeHtml(record.status)}</span></td>
         <td><strong>${escapeHtml(record.registrationNumber)}</strong></td>
@@ -171,6 +198,7 @@ function renderStaff(list = staff) {
           </div>
         </td>
       `;
+
       staffTable.appendChild(tr);
     });
 
@@ -179,9 +207,11 @@ function renderStaff(list = staff) {
 }
 
 function refreshCaseStaffOptions() {
-  const caseStaff = document.getElementById("caseStaff");
+  const caseStaff = el("caseStaff");
   if (!caseStaff) return;
+
   caseStaff.innerHTML = `<option value="">Select staff member</option>`;
+
   staff.forEach(s => {
     const option = document.createElement("option");
     option.value = s.id;
@@ -191,11 +221,13 @@ function refreshCaseStaffOptions() {
 }
 
 function refreshCaseAddedByOptions() {
-  const caseAddedBy = document.getElementById("caseAddedBy");
+  const caseAddedBy = el("caseAddedBy");
   if (!caseAddedBy) return;
+
   caseAddedBy.innerHTML = `<option value="">Select HCPC team member</option>`;
 
   const activeTeam = hcpcTeam.filter(t => t.status === "Active");
+
   if (activeTeam.length === 0) {
     const option = document.createElement("option");
     option.value = "System Administrator";
@@ -213,8 +245,9 @@ function refreshCaseAddedByOptions() {
 }
 
 function renderCases(list = cases) {
-  const caseCards = document.getElementById("caseCards");
+  const caseCards = el("caseCards");
   if (!caseCards) return;
+
   caseCards.innerHTML = "";
 
   if (list.length === 0) {
@@ -234,9 +267,7 @@ function renderCases(list = cases) {
       const reg = staffRecord ? staffRecord.registrationNumber : c.registrationNumber || "Unknown registration";
 
       const div = document.createElement("div");
-      const revokedClass = c.outcome === "Registration Revoked" ? "revoked-case" : "";
-      const closedClass = c.status === "Closed" ? "closed-case" : "";
-      div.className = `case-card ${revokedClass} ${closedClass}`;
+      div.className = `case-card ${c.outcome === "Registration Revoked" ? "revoked-case" : ""} ${c.status === "Closed" ? "closed-case" : ""}`;
 
       div.innerHTML = `
         <div class="case-head">
@@ -257,6 +288,7 @@ function renderCases(list = cases) {
           <button class="small revoke" onclick="deleteCase('${c.id}')">Delete case</button>
         </div>
       `;
+
       caseCards.appendChild(div);
     });
 
@@ -264,8 +296,11 @@ function renderCases(list = cases) {
 }
 
 function renderPublicLookup() {
-  const input = document.getElementById("publicLookupInput");
-  const result = document.getElementById("publicLookupResult");
+  const input = el("publicLookupInput");
+  const result = el("publicLookupResult");
+
+  if (!input || !result) return;
+
   const query = input.value.trim().toLowerCase();
 
   if (!query) {
@@ -275,9 +310,9 @@ function renderPublicLookup() {
   }
 
   const record = staff.find(s =>
-    s.registrationNumber.toLowerCase() === query ||
-    s.username.toLowerCase() === query ||
-    s.username.toLowerCase().includes(query)
+    s.registrationNumber?.toLowerCase() === query ||
+    s.username?.toLowerCase() === query ||
+    s.username?.toLowerCase().includes(query)
   );
 
   if (!record) {
@@ -290,6 +325,7 @@ function renderPublicLookup() {
   const punishments = linkedCases.filter(c => c.punishment && c.punishment !== "None");
 
   result.className = `lookup-card ${record.status === "Active" ? "active" : "revoked"}`;
+
   result.innerHTML = `
     <h3>${record.status === "Active" ? "Valid registration" : "Revoked registration"}</h3>
     <div class="profile-grid">
@@ -328,7 +364,9 @@ function renderPublicLookup() {
 }
 
 function renderTeam() {
-  const table = document.getElementById("hcpcTeamTable");
+  const table = el("hcpcTeamTable");
+  if (!table) return;
+
   table.innerHTML = "";
 
   if (hcpcTeam.length === 0) {
@@ -342,6 +380,7 @@ function renderTeam() {
     .sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
     .forEach(t => {
       const tr = document.createElement("tr");
+
       tr.innerHTML = `
         <td><span class="badge ${t.status === "Active" ? "active-badge" : "revoked-badge"}">${escapeHtml(t.status)}</span></td>
         <td>${escapeHtml(t.username)}</td>
@@ -359,6 +398,7 @@ function renderTeam() {
           </div>
         </td>
       `;
+
       table.appendChild(tr);
     });
 
@@ -366,13 +406,15 @@ function renderTeam() {
 }
 
 function renderRoleChips() {
-  const groupBox = document.getElementById("groupRoleChips");
-  const specBox = document.getElementById("specialityRoleChips");
+  const groupBox = el("groupRoleChips");
+  const specBox = el("specialityRoleChips");
+
   if (groupBox) {
     groupBox.innerHTML = groupRoles.map((role, index) => `
       <span class="chip">${escapeHtml(role)} <button onclick="removeGroupRole(${index})">x</button></span>
     `).join("");
   }
+
   if (specBox) {
     specBox.innerHTML = specialityRoles.map((role, index) => `
       <span class="chip">${escapeHtml(role)} <button onclick="removeSpecialityRole(${index})">x</button></span>
@@ -380,242 +422,213 @@ function renderRoleChips() {
   }
 }
 
-document.getElementById("registrationForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const username = document.getElementById("username").value.trim();
-  const duplicate = staff.find(s => s.username.toLowerCase() === username.toLowerCase() && s.status === "Active");
-
-  if (duplicate) {
-    alert("This Roblox username already has an active registration. Revoke it before creating another.");
-    return;
-  }
-
-  const record = {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    username,
-    displayName: document.getElementById("displayName").value.trim(),
-    department: document.getElementById("department").value,
-    role: document.getElementById("role").value,
-    specialityRole: document.getElementById("specialityRole").value || "None",
-    rank: document.getElementById("rank").value,
-    registeredBy: document.getElementById("registeredBy").value.trim(),
-    notes: document.getElementById("notes").value.trim(),
-    registrationNumber: generateRegistrationNumber(),
-    status: "Active",
-    registeredAt: new Date().toISOString(),
-    revokedAt: null
-  };
-
-  staff.push(record);
-  saveStaff();
-  renderStaff();
-  document.getElementById("registrationForm").reset();
-  renderPublicLookup();
-});
-
-document.getElementById("caseForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const staffRecord = staff.find(s => s.id === document.getElementById("caseStaff").value);
-  if (!staffRecord) {
-    alert("Select a valid staff member.");
-    return;
-  }
-
-  const outcome = document.getElementById("caseOutcome").value;
-  const punishment = document.getElementById("casePunishment").value;
-
-  const tribunalCase = {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    caseNumber: generateCaseNumber(),
-    staffId: staffRecord.id,
-    staffUsername: staffRecord.username,
-    staffRole: staffRecord.role,
-    specialityRole: staffRecord.specialityRole || "None",
-    registrationNumber: staffRecord.registrationNumber,
-    caseType: document.getElementById("caseType").value,
-    status: document.getElementById("caseStatus").value,
-    outcome,
-    punishment,
-    hearingDate: document.getElementById("caseDate").value,
-    addedBy: document.getElementById("caseAddedBy").value,
-    summary: document.getElementById("caseSummary").value.trim(),
-    sanctions: document.getElementById("caseSanctions").value.trim(),
-    createdAt: new Date().toISOString()
-  };
-
-  cases.push(tribunalCase);
-
-  if (outcome === "Registration Revoked" || punishment === "Removal from Register" || punishment === "Permanent Blacklist") {
-    staffRecord.status = "Revoked";
-    staffRecord.revokedAt = new Date().toISOString();
-    staffRecord.revocationReason = `Revoked by tribunal case ${tribunalCase.caseNumber}`;
-    saveStaff();
-  }
-
-  saveCases();
-  document.getElementById("caseForm").reset();
-  refreshCaseStaffOptions();
-  renderCases();
-  renderStaff();
-  renderPublicLookup();
-});
-
-document.getElementById("hcpcTeamForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const username = document.getElementById("teamUsername").value.trim();
-  const duplicate = hcpcTeam.find(t => t.username.toLowerCase() === username.toLowerCase() && t.status === "Active");
-
-  if (duplicate) {
-    alert("This username is already an active HCPC team member.");
-    return;
-  }
-
-  hcpcTeam.push({
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    username,
-    teamRole: document.getElementById("teamRole").value,
-    permission: document.getElementById("teamPermission").value,
-    addedBy: document.getElementById("teamAddedBy").value.trim(),
-    status: "Active",
-    addedAt: new Date().toISOString()
-  });
-
-  saveTeam();
-  document.getElementById("hcpcTeamForm").reset();
-  renderTeam();
-});
-
-document.getElementById("groupRoleForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const value = document.getElementById("newGroupRole").value.trim();
-  if (value && !groupRoles.includes(value)) {
-    groupRoles.push(value);
-    saveGroupRoles();
-    refreshRoleSelects();
-  }
-  event.target.reset();
-});
-
-document.getElementById("specialityRoleForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const value = document.getElementById("newSpecialityRole").value.trim();
-  if (value && !specialityRoles.includes(value)) {
-    specialityRoles.push(value);
-    saveSpecialityRoles();
-    refreshRoleSelects();
-  }
-  event.target.reset();
-});
-
-document.getElementById("loadDefaultRoles").addEventListener("click", () => {
-  groupRoles = [...new Set([...groupRoles, ...DEFAULT_GROUP_ROLES])];
-  saveGroupRoles();
-  refreshRoleSelects();
-});
-
-document.getElementById("loadDefaultSpecialities").addEventListener("click", () => {
-  specialityRoles = [...new Set([...specialityRoles, ...DEFAULT_SPECIALITIES])];
-  saveSpecialityRoles();
-  refreshRoleSelects();
-});
-
-document.getElementById("clearGroupRoles").addEventListener("click", () => {
-  if (!confirm("Clear all group roles?")) return;
-  groupRoles = [];
-  saveGroupRoles();
-  refreshRoleSelects();
-});
-
-document.getElementById("clearSpecialityRoles").addEventListener("click", () => {
-  if (!confirm("Clear all speciality roles?")) return;
-  specialityRoles = [];
-  saveSpecialityRoles();
-  refreshRoleSelects();
-});
-
-document.getElementById("publicLookupButton").addEventListener("click", renderPublicLookup);
-document.getElementById("publicLookupInput").addEventListener("keydown", event => {
-  if (event.key === "Enter") renderPublicLookup();
-});
-document.getElementById("clearPublicLookup").addEventListener("click", () => {
-  document.getElementById("publicLookupInput").value = "";
-  renderPublicLookup();
-});
-
-document.getElementById("caseSearchInput").addEventListener("input", () => {
-  const query = document.getElementById("caseSearchInput").value.trim().toLowerCase();
-  if (!query) {
-    renderCases();
-    return;
-  }
-
-  const filtered = cases.filter(c =>
-    c.caseNumber.toLowerCase().includes(query) ||
-    c.staffUsername.toLowerCase().includes(query) ||
-    c.registrationNumber.toLowerCase().includes(query) ||
-    c.caseType.toLowerCase().includes(query) ||
-    c.status.toLowerCase().includes(query) ||
-    c.outcome.toLowerCase().includes(query) ||
-    String(c.punishment || "").toLowerCase().includes(query)
-  );
-
-  renderCases(filtered);
-});
-
-document.getElementById("clearCaseSearch").addEventListener("click", () => {
-  document.getElementById("caseSearchInput").value = "";
-  renderCases();
-});
-
-document.getElementById("exportJson").addEventListener("click", () => {
-  const data = { staff, cases, hcpcTeam, groupRoles, specialityRoles };
-  downloadFile("uhh-registry-full-export.json", JSON.stringify(data, null, 2), "application/json");
-});
-
-document.getElementById("exportCsv").addEventListener("click", () => {
-  const headers = ["Status", "Registration Number", "Username", "Display Name", "Department", "Role", "Speciality", "Rank", "Registered By", "Registered At", "Revoked At", "Revocation Reason", "Notes"];
-  const rows = staff.map(s => [
-    s.status, s.registrationNumber, s.username, s.displayName, s.department, s.role, s.specialityRole || "None", s.rank,
-    s.registeredBy, s.registeredAt, s.revokedAt || "", s.revocationReason || "", s.notes || ""
-  ]);
-
-  const csv = [headers, ...rows]
-    .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(","))
-    .join("\n");
-
-  downloadFile("uhh-staff-registry.csv", csv, "text/csv");
-});
-
-document.getElementById("resetData").addEventListener("click", () => {
-  if (!confirm("Reset all saved registry, tribunal, team and role data?")) return;
-  staff = [];
-  cases = [];
-  hcpcTeam = [];
-  groupRoles = [...DEFAULT_GROUP_ROLES];
-  specialityRoles = [...DEFAULT_SPECIALITIES];
-  saveStaff();
-  saveCases();
-  saveTeam();
-  saveGroupRoles();
-  saveSpecialityRoles();
-  refreshRoleSelects();
-  renderStaff();
-  renderCases();
-  renderTeam();
-  renderPublicLookup();
-});
-
 function downloadFile(filename, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
+
   a.href = url;
   a.download = filename;
   a.click();
+
   URL.revokeObjectURL(url);
+}
+
+function setupForms() {
+  const registrationForm = el("registrationForm");
+  if (registrationForm) {
+    registrationForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const username = el("username").value.trim();
+      const duplicate = staff.find(s => s.username.toLowerCase() === username.toLowerCase() && s.status === "Active");
+
+      if (duplicate) {
+        alert("This Roblox username already has an active registration.");
+        return;
+      }
+
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        username,
+        displayName: el("displayName").value.trim(),
+        department: el("department").value,
+        role: el("role").value,
+        specialityRole: el("specialityRole").value || "None",
+        rank: el("rank").value,
+        registeredBy: el("registeredBy").value.trim(),
+        notes: el("notes").value.trim(),
+        registrationNumber: generateRegistrationNumber(),
+        status: "Active",
+        registeredAt: new Date().toISOString(),
+        revokedAt: null
+      };
+
+      staff.push(record);
+      saveStaff();
+      registrationForm.reset();
+      renderStaff();
+      renderPublicLookup();
+      alert("Staff registration created.");
+    });
+  }
+
+  const caseForm = el("caseForm");
+  if (caseForm) {
+    caseForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const staffRecord = staff.find(s => s.id === el("caseStaff").value);
+
+      if (!staffRecord) {
+        alert("Select a valid staff member.");
+        return;
+      }
+
+      const outcome = el("caseOutcome").value;
+      const punishment = el("casePunishment").value;
+
+      const tribunalCase = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        caseNumber: generateCaseNumber(),
+        staffId: staffRecord.id,
+        staffUsername: staffRecord.username,
+        staffRole: staffRecord.role,
+        specialityRole: staffRecord.specialityRole || "None",
+        registrationNumber: staffRecord.registrationNumber,
+        caseType: el("caseType").value,
+        status: el("caseStatus").value,
+        outcome,
+        punishment,
+        hearingDate: el("caseDate").value,
+        addedBy: el("caseAddedBy").value,
+        summary: el("caseSummary").value.trim(),
+        sanctions: el("caseSanctions").value.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      cases.push(tribunalCase);
+
+      if (outcome === "Registration Revoked" || punishment === "Removal from Register" || punishment === "Permanent Blacklist") {
+        staffRecord.status = "Revoked";
+        staffRecord.revokedAt = new Date().toISOString();
+        staffRecord.revocationReason = `Revoked by tribunal case ${tribunalCase.caseNumber}`;
+        saveStaff();
+      }
+
+      saveCases();
+      caseForm.reset();
+      renderCases();
+      renderStaff();
+      renderPublicLookup();
+    });
+  }
+
+  const hcpcTeamForm = el("hcpcTeamForm");
+  if (hcpcTeamForm) {
+    hcpcTeamForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const username = el("teamUsername").value.trim();
+
+      if (!username) {
+        alert("Enter a Roblox username.");
+        return;
+      }
+
+      const duplicate = hcpcTeam.find(t =>
+        t.username.toLowerCase() === username.toLowerCase() &&
+        t.status === "Active"
+      );
+
+      if (duplicate) {
+        alert("This username is already an active HCPC team member.");
+        return;
+      }
+
+      hcpcTeam.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        username,
+        teamRole: el("teamRole")?.value || "HCPC Member",
+        permission: el("teamPermission")?.value || "Standard",
+        addedBy: el("teamAddedBy")?.value.trim() || "System Administrator",
+        status: "Active",
+        addedAt: new Date().toISOString()
+      });
+
+      saveTeam();
+      hcpcTeamForm.reset();
+      renderTeam();
+
+      alert("HCPC team member added.");
+    });
+  }
+}
+
+function setupButtons() {
+  if (el("publicLookupButton")) {
+    el("publicLookupButton").addEventListener("click", renderPublicLookup);
+  }
+
+  if (el("publicLookupInput")) {
+    el("publicLookupInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") renderPublicLookup();
+    });
+  }
+
+  if (el("clearPublicLookup")) {
+    el("clearPublicLookup").addEventListener("click", () => {
+      el("publicLookupInput").value = "";
+      renderPublicLookup();
+    });
+  }
+
+  if (el("exportJson")) {
+    el("exportJson").addEventListener("click", () => {
+      const data = { staff, cases, hcpcTeam, groupRoles, specialityRoles };
+      downloadFile("uhh-registry-full-export.json", JSON.stringify(data, null, 2), "application/json");
+    });
+  }
+
+  if (el("exportCsv")) {
+    el("exportCsv").addEventListener("click", () => {
+      const headers = ["Status", "Registration Number", "Username", "Display Name", "Department", "Role", "Speciality", "Rank", "Registered By", "Registered At", "Revoked At", "Revocation Reason", "Notes"];
+      const rows = staff.map(s => [
+        s.status, s.registrationNumber, s.username, s.displayName, s.department, s.role, s.specialityRole || "None", s.rank,
+        s.registeredBy, s.registeredAt, s.revokedAt || "", s.revocationReason || "", s.notes || ""
+      ]);
+
+      const csv = [headers, ...rows]
+        .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(","))
+        .join("\n");
+
+      downloadFile("uhh-staff-registry.csv", csv, "text/csv");
+    });
+  }
+
+  if (el("resetData")) {
+    el("resetData").addEventListener("click", () => {
+      if (!confirm("Reset all saved registry, tribunal, team and role data?")) return;
+
+      staff = [];
+      cases = [];
+      hcpcTeam = [];
+      groupRoles = [...DEFAULT_GROUP_ROLES];
+      specialityRoles = [...DEFAULT_SPECIALITIES];
+
+      saveStaff();
+      saveCases();
+      saveTeam();
+      saveGroupRoles();
+      saveSpecialityRoles();
+
+      refreshRoleSelects();
+      renderStaff();
+      renderCases();
+      renderTeam();
+      renderPublicLookup();
+    });
+  }
 }
 
 window.revokeRecord = function(id) {
@@ -626,6 +639,7 @@ window.revokeRecord = function(id) {
   record.status = "Revoked";
   record.revokedAt = new Date().toISOString();
   record.revocationReason = reason || "No reason provided";
+
   saveStaff();
   renderStaff();
   renderPublicLookup();
@@ -638,6 +652,7 @@ window.restoreRecord = function(id) {
   record.status = "Active";
   record.revokedAt = null;
   record.revocationReason = "";
+
   saveStaff();
   renderStaff();
   renderPublicLookup();
@@ -645,47 +660,17 @@ window.restoreRecord = function(id) {
 
 window.deleteRecord = function(id) {
   if (!confirm("Delete this staff record permanently?")) return;
+
   staff = staff.filter(s => s.id !== id);
   saveStaff();
   renderStaff();
   renderPublicLookup();
 };
 
-window.editCaseOutcome = function(id) {
-  const c = cases.find(x => x.id === id);
-  if (!c) return;
-
-  const newOutcome = prompt("Update outcome:", c.outcome);
-  if (!newOutcome) return;
-
-  c.outcome = newOutcome;
-  if (newOutcome === "Registration Revoked") {
-    const staffRecord = staff.find(s => s.id === c.staffId);
-    if (staffRecord) {
-      staffRecord.status = "Revoked";
-      staffRecord.revokedAt = new Date().toISOString();
-      staffRecord.revocationReason = `Revoked by tribunal case ${c.caseNumber}`;
-      saveStaff();
-    }
-  }
-
-  saveCases();
-  renderCases();
-  renderStaff();
-  renderPublicLookup();
-};
-
-window.deleteCase = function(id) {
-  if (!confirm("Delete this tribunal case?")) return;
-  cases = cases.filter(c => c.id !== id);
-  saveCases();
-  renderCases();
-  renderPublicLookup();
-};
-
 window.disableTeamMember = function(id) {
   const t = hcpcTeam.find(x => x.id === id);
   if (!t) return;
+
   t.status = "Disabled";
   saveTeam();
   renderTeam();
@@ -694,6 +679,7 @@ window.disableTeamMember = function(id) {
 window.enableTeamMember = function(id) {
   const t = hcpcTeam.find(x => x.id === id);
   if (!t) return;
+
   t.status = "Active";
   saveTeam();
   renderTeam();
@@ -701,6 +687,7 @@ window.enableTeamMember = function(id) {
 
 window.removeTeamMember = function(id) {
   if (!confirm("Delete this HCPC team member?")) return;
+
   hcpcTeam = hcpcTeam.filter(t => t.id !== id);
   saveTeam();
   renderTeam();
@@ -718,10 +705,18 @@ window.removeSpecialityRole = function(index) {
   refreshRoleSelects();
 };
 
-refreshRoleSelects();
-refreshCaseStaffOptions();
-refreshCaseAddedByOptions();
-renderStaff();
-renderCases();
-renderTeam();
-renderPublicLookup();
+document.addEventListener("DOMContentLoaded", () => {
+  setupForms();
+  setupButtons();
+
+  refreshRoleSelects();
+  refreshCaseStaffOptions();
+  refreshCaseAddedByOptions();
+
+  renderStaff();
+  renderCases();
+  renderTeam();
+  renderPublicLookup();
+
+  updateStats();
+});
