@@ -1,5 +1,5 @@
 // Put this in your website JS and change the URL after you deploy the backend.
-const API_BASE = 'https://YOUR_BACKEND_URL';
+const API_BASE = 'https://https://uhh-backend.onrender.com';
 
 function getToken() {
   return localStorage.getItem('uhh_auth_token');
