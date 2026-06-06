@@ -1,180 +1,296 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Log — UHH Portal</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="UHH dashboard">
-        <div class="brand-mark">UHH</div>
-        <div>
-          <strong>University Hospital Healthcare</strong>
-          <span>Caring · Safe · Respectful</span>
-        </div>
-      </a>
-      <nav class="main-nav" aria-label="Main navigation">
-        <a href="index.html">Dashboard</a>
-        <a href="login.html">Staff Portal</a>
-        <a href="lookup.html">Lookup</a>
-        <a href="announcements.html">Announcements</a>
-        <a href="vacancies.html">Vacancies</a>
-        <a href="info.html">Info</a>
-      </nav>
-    </div>
-  </header>
+:root {
+  --blue: #005eb8;
+  --dark-blue: #003087;
+  --light-blue: #e8f3ff;
+  --green: #007f3b;
+  --red: #da291c;
+  --text: #1f2933;
+  --muted: #5f6b7a;
+  --border: #d8dde6;
+  --bg: #f4f8fb;
+  --white: #ffffff;
+}
 
-  <div class="page-hero">
-    <div class="container">
-      <h1>Staff log</h1>
-      <p>All registrations are saved locally in this browser.</p>
-    </div>
-  </div>
+* {
+  box-sizing: border-box;
+}
 
-  <main class="container" style="padding:34px 0;">
-    <section class="panel">
-      <div class="actions" style="margin-bottom:20px;">
-        <button id="exportJson">Export JSON</button>
-        <button id="exportCsv">Export CSV</button>
-        <a href="register.html" class="button-link primary">+ Register new staff</a>
-        <button id="resetData" class="danger-outline">Reset all registry data</button>
-      </div>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Registration No.</th>
-              <th>Roblox Username</th>
-              <th>Roles</th>
-              <th>Specialities</th>
-              <th>Department</th>
-              <th>Rank</th>
-              <th>Registered</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="staffTable"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+a {
+  color: var(--blue);
+}
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div><strong>University Hospital Healthcare</strong><p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p></div>
-      <div><strong>Useful links</strong><p><a href="login.html">Staff Portal</a> · <a href="lookup.html">Lookup</a> · <a href="vacancies.html">Vacancies</a></p></div>
-    </div>
-  </footer>
+.container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
 
-  <script src="shared.js"></script>
-  <script>
-    loadAllData();
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
 
-    function renderStaff(list) {
-      list = list || staff;
-      const tbody = document.getElementById("staffTable");
-      tbody.innerHTML = "";
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+}
 
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9">No staff records found. <a href="register.html">Register a staff member</a>.</td></tr>`;
-        return;
-      }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--dark-blue);
+  text-decoration: none;
+}
 
-      list.slice().sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt)).forEach(record => {
-        const rolesDisplay = (record.roles || []).join(", ") || "None";
-        const specialitiesDisplay = (record.specialityRoles || []).join(", ") || "None";
+.brand-mark {
+  width: 54px;
+  height: 54px;
+  background: var(--blue);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  border-radius: 8px;
+}
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><span class="badge ${record.status === "Active" ? "active-badge" : "revoked-badge"}">${escapeHtml(record.status)}</span></td>
-          <td><strong>${escapeHtml(record.registrationNumber)}</strong></td>
-          <td>${escapeHtml(record.username)}${record.displayName ? `<br><small>${escapeHtml(record.displayName)}</small>` : ""}</td>
-          <td>${escapeHtml(rolesDisplay)}</td>
-          <td>${escapeHtml(specialitiesDisplay)}</td>
-          <td>${escapeHtml(record.department)}</td>
-          <td>${escapeHtml(record.rank)}</td>
-          <td>${formatDate(record.registeredAt)}<br><small>By ${escapeHtml(record.registeredBy)}</small></td>
-          <td>
-            <div class="row-actions">
-              ${record.status === "Active"
-                ? `<button class="small revoke" onclick="revokeRecord('${record.id}')">Revoke</button>`
-                : `<button class="small restore" onclick="restoreRecord('${record.id}')">Restore</button>`
-              }
-              <button class="small" onclick="deleteRecord('${record.id}')">Delete</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+.brand strong {
+  display: block;
+  font-size: 1.1rem;
+}
 
-    window.revokeRecord = function(id) {
-      const record = staff.find(s => s.id === id);
-      if (!record) return;
-      const reason = prompt("Reason for revocation:", "No reason provided");
-      record.status = "Revoked";
-      record.revokedAt = new Date().toISOString();
-      record.revocationReason = reason || "No reason provided";
-      saveStaff();
-      renderStaff();
-    };
+.brand span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
 
-    window.restoreRecord = function(id) {
-      const record = staff.find(s => s.id === id);
-      if (!record) return;
-      record.status = "Active";
-      record.revokedAt = null;
-      record.revocationReason = "";
-      saveStaff();
-      renderStaff();
-    };
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
-    window.deleteRecord = function(id) {
-      if (!confirm("Delete this staff record permanently?")) return;
-      staff = staff.filter(s => s.id !== id);
-      saveStaff();
-      renderStaff();
-    };
+.main-nav a {
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: var(--dark-blue);
+  font-weight: 700;
+}
 
-    document.getElementById("exportJson").addEventListener("click", () => {
-      const data = { staff, cases, hcpcTeam, groupRoles, specialityRoles };
-      downloadFile("uhh-registry-full-export.json", JSON.stringify(data, null, 2), "application/json");
-    });
+.main-nav a:hover,
+.main-nav a.nav-active {
+  background: var(--light-blue);
+}
 
-    document.getElementById("exportCsv").addEventListener("click", () => {
-      const headers = ["Status", "Registration Number", "Username", "Display Name", "Department", "Roles", "Specialities", "Rank", "Registered By", "Registered At", "Revoked At", "Revocation Reason", "Notes"];
-      const rows = staff.map(s => [
-        s.status, s.registrationNumber, s.username, s.displayName, s.department,
-        (s.roles || []).join("; "), (s.specialityRoles || []).join("; "), s.rank,
-        s.registeredBy, s.registeredAt, s.revokedAt || "", s.revocationReason || "", s.notes || ""
-      ]);
-      const csv = [headers, ...rows]
-        .map(row => row.map(v => `"${String(v).replaceAll('"', '""')}"`).join(","))
-        .join("\n");
-      downloadFile("uhh-staff-registry.csv", csv, "text/csv");
-    });
+.page-hero {
+  background: linear-gradient(135deg, var(--blue), var(--dark-blue));
+  color: white;
+  padding: 44px 0;
+}
 
-    document.getElementById("resetData").addEventListener("click", () => {
-      if (!confirm("Reset all saved registry, tribunal, team and role data?")) return;
-      staff = [];
-      cases = [];
-      hcpcTeam = [];
-      groupRoles = [...DEFAULT_GROUP_ROLES];
-      specialityRoles = [...DEFAULT_SPECIALITIES];
-      saveStaff();
-      saveCases();
-      saveTeam();
-      saveGroupRoles();
-      saveSpecialityRoles();
-      renderStaff();
-    });
+.page-hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
 
-    renderStaff();
-  </script>
-</body>
-</html>
+.page-hero p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.panel,
+.card,
+.login-box {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 48, 135, 0.08);
+}
+
+.grid,
+.dashboard-grid,
+.footer-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.card h2,
+.panel h2 {
+  margin-top: 0;
+  color: var(--dark-blue);
+}
+
+.button-link,
+button,
+.primary,
+.login-btn {
+  display: inline-block;
+  border: 0;
+  background: var(--blue);
+  color: white;
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button:hover,
+.button-link:hover,
+.primary:hover,
+.login-btn:hover {
+  background: var(--dark-blue);
+}
+
+.danger-outline {
+  background: white;
+  color: var(--red);
+  border: 2px solid var(--red);
+}
+
+.danger-outline:hover {
+  background: var(--red);
+  color: white;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-grid .full {
+  grid-column: 1 / -1;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font: inherit;
+  background: white;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--border);
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--light-blue);
+  color: var(--dark-blue);
+}
+
+.badge,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.active-badge {
+  background: #e7f6ec;
+  color: var(--green);
+}
+
+.revoked-badge {
+  background: #fdecea;
+  color: var(--red);
+}
+
+.chip {
+  background: var(--light-blue);
+  color: var(--dark-blue);
+  margin: 3px;
+}
+
+.chip button {
+  padding: 0 6px;
+  border-radius: 999px;
+}
+
+.success-banner {
+  background: #e7f6ec;
+  border-left: 6px solid var(--green);
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.site-footer {
+  background: #1f2933;
+  color: white;
+  margin-top: 40px;
+  padding: 28px 0;
+}
+
+.site-footer a {
+  color: white;
+}
+
+.footer-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 760px) {
+  .header-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
