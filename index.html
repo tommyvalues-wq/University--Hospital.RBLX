@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UHH Roblox Healthcare</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
   <header class="topbar">
     <div class="container header-inner">
-      <a class="brand" href="index.html">
+      <a class="brand" href="./index.html">
         <div class="brand-mark">UHH</div>
         <div>
           <strong>University Hospital Healthcare</strong>
@@ -18,14 +18,14 @@
         </div>
       </a>
 
-<nav class="main-nav">
-  <a href="/UniversityHospital.RBLX/index.html">Dashboard</a>
-  <a href="/UniversityHospital.RBLX/login.html">Staff Portal</a>
-  <a href="/UniversityHospital.RBLX/lookup.html">Lookup</a>
-  <a href="/UniversityHospital.RBLX/announcements.html">Announcements</a>
-  <a href="/UniversityHospital.RBLX/vacancies.html">Vacancies</a>
-  <a href="/UniversityHospital.RBLX/info.html">Info</a>
-</nav>
+      <nav class="main-nav">
+        <a href="./index.html">Dashboard</a>
+        <a href="./login.html">Staff Portal</a>
+        <a href="./lookup.html">Lookup</a>
+        <a href="./announcements.html">Announcements</a>
+        <a href="./vacancies.html">Vacancies</a>
+        <a href="./info.html">Info</a>
+      </nav>
     </div>
   </header>
 
@@ -39,11 +39,11 @@
   <main class="container" style="padding:34px 0;">
     <section class="panel">
       <h2>What are you looking for today?</h2>
-      <div class="actions">
-       <a class="button-link primary" href="/UniversityHospital.RBLX/login.html">Staff Portal</a>
-<a class="button-link primary" href="/UniversityHospital.RBLX/lookup.html">Lookup Staff</a>
 
-        <a class="button-link primary" href="/UniversityHospital.RBLX/vacancies.html">Current Vacancies</a>
+      <div class="actions">
+        <button onclick="goToPage('login.html')">Staff Portal</button>
+        <button onclick="goToPage('lookup.html')">Lookup Staff</button>
+        <button onclick="goToPage('vacancies.html')">Current Vacancies</button>
       </div>
     </section>
 
@@ -51,46 +51,32 @@
       <div class="card">
         <h2>Hospital News</h2>
         <p>Latest UHH announcements, service updates and staff notices.</p>
-        <a class="button-link primary" href="/UniversityHospital.RBLX/announcements.html">View all news</a>
+        <button onclick="goToPage('announcements.html')">View all news</button>
       </div>
 
       <div class="card">
         <h2>Staff Portal</h2>
-        <p>Login with Roblox to access staff tools, requests, guides and internal announcements.</p>
-        <a class="button-link primary" href="login.html">Go to staff login</a>
+        <p>Login with Roblox to access staff tools and internal resources.</p>
+        <button onclick="goToPage('login.html')">Go to staff login</button>
       </div>
 
       <div class="card">
         <h2>Staff Lookup</h2>
-        <p>Check a UHH staff registration and view public staff information.</p>
-        <a class="button-link primary" href="lookup.html">Open lookup</a>
+        <p>Check a UHH staff registration.</p>
+        <button onclick="goToPage('lookup.html')">Open lookup</button>
       </div>
 
       <div class="card">
         <h2>Vacancies</h2>
-        <p>View open roles, departments recruiting and internal opportunities.</p>
-        <a class="button-link primary" href="vacancies.html">View vacancies</a>
+        <p>View current vacancies and open roles.</p>
+        <button onclick="goToPage('vacancies.html')">View vacancies</button>
       </div>
 
       <div class="card">
         <h2>Information</h2>
-        <p>Read UHH guidance, rules, policies and useful public notices.</p>
-       <a class="button-link primary" href="/UniversityHospital.RBLX/info.html">Read information</a>
+        <p>Read UHH guidance, rules and notices.</p>
+        <button onclick="goToPage('info.html')">Read information</button>
       </div>
-
-      <div class="card">
-        <h2>Announcements</h2>
-        <p>View hospital announcements and updates from HCPC or senior leadership.</p>
-        <a class="button-link primary" href="announcements.html">Open announcements</a>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top:20px;">
-      <h2>Notice</h2>
-      <p>
-        Staff management tools are now inside the Staff Portal. Public users can only access
-        Dashboard, Staff Portal, Lookup, Announcements, Vacancies and Info.
-      </p>
     </section>
   </main>
 
@@ -100,18 +86,13 @@
         <strong>University Hospital Healthcare</strong>
         <p>Fictional Roblox healthcare system. Not affiliated with the NHS, Roblox, or the real HCPC.</p>
       </div>
-
-      <div>
-        <strong>Useful links</strong>
-        <p>
-          <a href="login.html">Staff Portal</a> ·
-          <a href="lookup.html">Lookup</a> ·
-          <a href="vacancies.html">Vacancies</a>
-        </p>
-      </div>
     </div>
   </footer>
 
-  <script src="shared.js"></script>
+  <script>
+    function goToPage(page) {
+      window.location.href = page;
+    }
+  </script>
 </body>
 </html>
